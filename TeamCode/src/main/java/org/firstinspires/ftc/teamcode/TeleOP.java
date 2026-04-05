@@ -1,17 +1,15 @@
-package org.firstinspires.ftc.teamcode.samples;
+package org.firstinspires.ftc.teamcode;
 
 
 import com.pedropathing.follower.Follower;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@TeleOp
-@Disabled
-public class PedroTeleOpSample extends CommandOpMode {
+@TeleOp (name = "BLUE TEAM")
+public class TeleOP extends CommandOpMode {
     Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
 
@@ -26,10 +24,6 @@ public class PedroTeleOpSample extends CommandOpMode {
     @Override
     public void run() {
         super.run();
-
-        /* Robot-Centric Drive
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
-        */
 
         // Field-Centric Drive
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
