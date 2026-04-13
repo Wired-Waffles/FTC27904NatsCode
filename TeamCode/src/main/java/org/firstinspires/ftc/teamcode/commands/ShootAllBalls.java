@@ -32,7 +32,8 @@ public class ShootAllBalls extends CommandBase {
     public void execute() {
         turret.startTracking();
         shooter.interpLUTShoot(turret.getDistanceToGoal());
-        if ((shooter.getCurrentVelo() > shooter.getTargetVelo()-50 || shooter.getTargetVelo()+50 > shooter.getCurrentVelo()) && turret.reachedTarget()){
+
+        if ((shooter.getError() > -50 && shooter.getError() < 50) && turret.reachedTarget()){
             intake.run();
         } else {
             intake.kill();

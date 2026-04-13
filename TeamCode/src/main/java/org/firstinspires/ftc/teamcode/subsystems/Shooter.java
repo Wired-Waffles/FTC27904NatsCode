@@ -52,8 +52,8 @@ public class Shooter extends SubsystemBase {
 
     public void velocity(double targetVelocity){
         double output = shooterPIDF.calculate(shooter1.getVelocity(), targetVelocity);
-        shooter1.setVelocity(output);
-        shooter2.setVelocity(output);
+        shooter1.set(output);
+        shooter2.set(output);
         //shooter1.setVelocity(targetVelocity);
         //shooter2.setVelocity(targetVelocity);
         //targetVelo = targetVelocity;
@@ -81,6 +81,10 @@ public class Shooter extends SubsystemBase {
     }
     public double getTargetVelo(){
         return targetVelo;
+    }
+
+    public double getError(){
+        return targetVelo-shooter1.getVelocity();
     }
 
 }

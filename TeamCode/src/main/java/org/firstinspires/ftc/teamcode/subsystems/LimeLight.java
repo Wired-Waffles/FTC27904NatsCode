@@ -17,10 +17,12 @@ public class LimeLight extends SubsystemBase {
     Pose pose;
     Pose3D limelightPose;
     LLResult res;
+    Alliance alliance;
     public LimeLight(HardwareMap hardwareMap, Alliance alliance){
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(2);
         limelight.start();
+        this.alliance = alliance;
     }
 
 

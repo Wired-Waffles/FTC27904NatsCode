@@ -82,7 +82,7 @@ public class Turret extends SubsystemBase {
 
         heading = robotPos.getHeading();
         double dx = goalX-robotPos.getX();
-        double dy = goalY-robotPos.getX();
+        double dy = goalY-robotPos.getY();
 
         robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));//direction
         distanceToGoal = Math.hypot(dx,dy);//magnitude
@@ -100,7 +100,13 @@ public class Turret extends SubsystemBase {
     public void TurretSetPos(double PosDeg){
         double countPerDegree = turret.getCPR() / 360;
 
-        int turretTargetPos = (int) (PosDeg * (countPerDegree * gearRatio));
+        int turretTargetPos = (int) (PosDeg * (countPerDegree * gearRatio));/*
+        if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
+            turretTargetPos -= (int) (360 * (countPerDegree * gearRatio));
+        } else if (turretTargetPos > (int) (-185 * (countPerDegree * gearRatio))){
+            turretTargetPos += (int) (360 * (countPerDegree * gearRatio));
+        }*/
+
         turret.setTargetPosition(turretTargetPos);
     }
 
