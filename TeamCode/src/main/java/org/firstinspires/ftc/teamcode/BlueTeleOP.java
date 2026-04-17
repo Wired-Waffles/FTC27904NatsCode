@@ -114,7 +114,6 @@ public class BlueTeleOP extends CommandOpMode {
 
         follower = Constants.createFollower(hardwareMap);
         super.reset();
-
         limelight = new LimeLight(hardwareMap, Alliance.BLUE);
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap);
@@ -173,10 +172,10 @@ public class BlueTeleOP extends CommandOpMode {
         ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> shooter.interpLUTShoot(turret.distanceToGoal));
         Button basicCloseZoneShoot = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_LEFT
-        ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> shooter.velocity(closeZoneVelo));
+        ).whenPressed(() -> shooter.velocity(closeZoneVelo));
         Button basicFarZoneShoot = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_RIGHT
-        ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> shooter.velocity(farZoneVelo));
+        ).whenPressed(() -> shooter.velocity(farZoneVelo));
         Button killShooter = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_DOWN
         ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> shooter.velocity(0));
@@ -199,13 +198,13 @@ public class BlueTeleOP extends CommandOpMode {
             if (!gamepad2.isRumbling()){gamepad2.rumble(100);}
         }
 
+        shooter.setPIDFCoeffs(OpModeStorage.kp, OpModeStorage.ki,OpModeStorage.kd,OpModeStorage.kf);
         limelight.setPose(follower.getPose());
         if (limelight.canRelocalize()){
             follower.setPose(limelight.getPoseFromLimelight());
         }
-        if (variables.isAutoDrive()) {
-             follower.setTeleOpDrive(-gamepad1.left_stick_y/driveDivisor, -gamepad1.left_stick_x/driveDivisor, -gamepad1.right_stick_x/driveDivisor, false);
-        }
+        follower.setTeleOpDrive(-gamepad1.left_stick_y/driveDivisor, -gamepad1.left_stick_x/driveDivisor, -gamepad1.right_stick_x/driveDivisor, true);
+
         follower.update();
 
         telemetryData.addData("X", follower.getPose().getX());

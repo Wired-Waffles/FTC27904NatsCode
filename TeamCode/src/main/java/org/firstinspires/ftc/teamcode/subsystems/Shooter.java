@@ -19,6 +19,7 @@ public class Shooter extends SubsystemBase {
     PIDFController shooterPIDF = new PIDFController(0.1,0,0,0.1);
     double distance;
     double targetVelo;
+    double power;
 
 
     @Override
@@ -34,6 +35,7 @@ public class Shooter extends SubsystemBase {
         this.hoodServo = new ServoEx(hardwareMap, "hoodServo");
         shooter1.setRunMode(MotorEx.RunMode.VelocityControl);
         shooter2.setRunMode(Motor.RunMode.VelocityControl);
+        shooter1.setInverted(true);
         shooter1.setVeloCoefficients(1,0,0.1);
         shooter2.setVeloCoefficients(1,0,0.1);
         //input then output
@@ -56,7 +58,8 @@ public class Shooter extends SubsystemBase {
         shooter2.set(output);
         //shooter1.setVelocity(targetVelocity);
         //shooter2.setVelocity(targetVelocity);
-        //targetVelo = targetVelocity;
+        targetVelo = targetVelocity;
+        power = output;
     }
     public void hoodPos(double pos){
         hoodServo.set(pos);
@@ -81,6 +84,10 @@ public class Shooter extends SubsystemBase {
     }
     public double getTargetVelo(){
         return targetVelo;
+    }
+
+    public double getShooterPower() {
+        return power;
     }
 
     public double getError(){
