@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -14,26 +15,40 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.commands.IntakeKill;
 import org.firstinspires.ftc.teamcode.commands.IntakeRun;
-import org.firstinspires.ftc.teamcode.commands.ShootAndHold;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.LimeLight;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.Turret;
+
 @TeleOp(name = "Shooter PIDF tuning")
 @Configurable
 public class ShooterTuning extends CommandOpMode {
     GamepadEx coreDriver, controlPanel;
     Shooter shooter;
     Intake intake;
+    LimeLight limelight;
+    Turret turret;
+    Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
     TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-    public static double velocity = 1800;
+    public static double velocity = 1500;
+    public static double hoodPos = 0;
 
-    public static double kp = 0.000;
-    public static double kf = 0.000255;
+    public static double kp = 0.007;
+    public static double ks = 0.09;
+    public static double kv = 0.0004325;
+
+    boolean startShooter = false;
+
     @Override
     public void initialize() {
         super.reset();
+        follower = Constants.createFollower(hardwareMap);
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap);
+        limelight = new LimeLight(hardwareMap, Alliance.RED);
+        turret = new Turret(hardwareMap, follower, Alliance.RED);
 
         coreDriver = new GamepadEx(gamepad1);
         controlPanel = new GamepadEx(gamepad2);
@@ -43,55 +58,53 @@ public class ShooterTuning extends CommandOpMode {
         ).whenPressed(
                 new InstantCommand(() -> shooter.velocity(velocity))
         );
-        Button addMoreKP = new GamepadButton(
+        Button addMoreVelo = new GamepadButton(
                 coreDriver, GamepadKeys.Button.DPAD_UP
-        ).whenPressed(new InstantCommand(()->kp+= 0.0001));
-        Button addSlightlyMoreKP = new GamepadButton(
+        ).whenPressed(new InstantCommand(()->velocity += 100));
+        Button addLessVelo = new GamepadButton(
+                coreDriver, GamepadKeys.Button.DPAD_DOWN
+        ).whenPressed(new InstantCommand(()-> velocity -= 100));
+        Button addMoreHoodAngle = new GamepadButton(
+                coreDriver, GamepadKeys.Button.DPAD_RIGHT
+        ).whenPressed(new InstantCommand(()-> hoodPos+=0.05));
+        Button addLessHoodAngle = new GamepadButton(
                 coreDriver, GamepadKeys.Button.DPAD_LEFT
-        ).whenPressed(new InstantCommand(()->kp+= 0.00001));
-        Button addLessKP = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_UP
-        ).whenPressed(new InstantCommand(()->kp-= 0.0001));
-        Button addSlightlyLessKP = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_LEFT
-        ).whenPressed(new InstantCommand(()->kp-= 0.00001));
+        ).whenPressed(new InstantCommand(()-> hoodPos-=0.05));
         Button intakeButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.LEFT_BUMPER
         ).whenPressed(new IntakeRun(intake)).whenReleased(new IntakeKill(intake));
-        Button addMoreKF = new GamepadButton(
-                coreDriver, GamepadKeys.Button.TRIANGLE
-        ).whenPressed(new InstantCommand(()->kf+= 0.0001));
-        Button addSlightlyMoreKF = new GamepadButton(
-                coreDriver, GamepadKeys.Button.SQUARE
-        ).whenPressed(new InstantCommand(()->kf+= 0.00001));
-        Button addLessKF = new GamepadButton(
-                coreDriver, GamepadKeys.Button.CROSS
-        ).whenPressed(new InstantCommand(()->kf-= 0.0001));
-        Button addSlightlyLessKF = new GamepadButton(
+        Button setShooterPosButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.CIRCLE
-        ).whenPressed(new InstantCommand(()->kf-= 0.00001));
-        Button killShooter = new GamepadButton(
-                coreDriver, GamepadKeys.Button.OPTIONS
-        ).whenPressed(new InstantCommand(()-> shooter.velocity(0)));
-
-
+        ).whenPressed(new InstantCommand(() -> shooter.hoodPos(hoodPos)));
+    follower.startTeleopDrive();
 
     }
 
     @Override
     public void run() {
         super.run();
-        shooter.setPIDFCoeffs(kp, 0, 0, kf);
+        shooter.setPIDFCoeffs(kp, 0, 0, 0);
+        shooter.setFeedforward(ks, kv, 0);
+        limelight.setPose(follower.getPose());
         telemetryData.addData( "shooter velo",shooter.getCurrentVelo());
         telemetryData.addData("target velo", shooter.getTargetVelo());
         telemetryData.addData("kp", kp);
-        telemetryData.addData("kf", kf);
+        telemetryData.addData("kv", kv);
+        telemetryData.addData("ks", ks);
         telemetryM.addData( "shooter velo",shooter.getCurrentVelo());
         telemetryM.addData("target velo", shooter.getTargetVelo());
         telemetryM.addData("kp", kp);
-        telemetryM.addData("kf", kf);
+        telemetryM.addData("kv", kv);
+        telemetryM.addData("ks", ks);
         telemetryM.addData("power", shooter.getShooterPower());
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         telemetryM.update();
+        telemetryData.update();
+
+        if (limelight.canRelocalize()) {
+            follower.setPose(limelight.getPoseFromLimelight());
+        }
+        follower.update();
     }
 
 }

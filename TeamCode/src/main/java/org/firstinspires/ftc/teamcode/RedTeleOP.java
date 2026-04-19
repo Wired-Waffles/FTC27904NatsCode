@@ -22,9 +22,7 @@ import org.firstinspires.ftc.teamcode.commands.IntakeEject;
 import org.firstinspires.ftc.teamcode.commands.IntakeKill;
 import org.firstinspires.ftc.teamcode.commands.IntakeRun;
 import org.firstinspires.ftc.teamcode.commands.OpenStopper;
-import org.firstinspires.ftc.teamcode.commands.ShootAllBalls;
 import org.firstinspires.ftc.teamcode.commands.ShootAndHold;
-import org.firstinspires.ftc.teamcode.commands.Wait;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.LimeLight;
@@ -33,8 +31,8 @@ import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 import java.util.function.Supplier;
 
-@TeleOp (name = "BLUE TEAM")
-public class BlueTeleOP extends CommandOpMode {
+@TeleOp (name = "RED TEAM")
+public class RedTeleOP extends CommandOpMode {
     Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
     LimeLight limelight;
@@ -53,22 +51,26 @@ public class BlueTeleOP extends CommandOpMode {
     Supplier<PathChain> toHumanPlayer, collectViaHumanPlayer, leaveHumanPlayer, toRamp, collectViaRamp, leaveRamp, autoPark, toCloseZone, toFarZone;
     OpModeStorage variables;
     public static boolean autoDrive;
-    double closeZoneVelo = 1100;
-    double farZoneVelo = 1500;
+    double closeZoneVelo = 1800;
+    double farZoneVelo = 2500;
     double driveDivisor = 2;
+    boolean cancelShooterCommands = false;
+    boolean cancelCommands = false;
+
+    //Button shootButton, intakeButton, ejectButton, humanPlayerCollectButton, rampCollectButton, toCloseZoneButton, toFarZoneButton, parkButton, openStopper, escape, interpLUTShoot, basicCloseZoneShoot, basicFarZoneShoot, killShooter, fullPowerButton;
 
 
 
 
     @Override
     public void initialize() {
-        rampCycleCollectPose = new Pose(13, 61, 150);
-        alignToRampCyclePose = new Pose(121, 61, 150);
-        alignToHumanPlayer = new Pose(120, 10, 0);
-        collectFromHumanPlayer = new Pose(134, 10, 0);
-        park = new Pose(107, 33, 90);
-        farZone = new Pose(60, 12, 110);
-        closeZone = new Pose(54,90, 135);
+        rampCycleCollectPose = new Pose(131, 61, 30);
+        alignToRampCyclePose = new Pose(121, 61, 30);
+        alignToHumanPlayer = new Pose(24, 10, 180);
+        collectFromHumanPlayer = new Pose(10, 10, 180);
+        park = new Pose(37, 33, 90);
+        farZone = new Pose(89, 10, 70);
+        closeZone = new Pose(90,90, 45);
         toHumanPlayer = () -> follower.pathBuilder()
                 .addPath(new BezierLine(follower::getPose, alignToHumanPlayer))
                 .setLinearHeadingInterpolation(follower.getHeading(), alignToHumanPlayer.getHeading(), 0.8)
@@ -87,6 +89,7 @@ public class BlueTeleOP extends CommandOpMode {
                 .build();
         collectViaRamp = () -> follower.pathBuilder()
                 .addPath(new BezierLine(alignToRampCyclePose, rampCycleCollectPose))
+                .setLinearHeadingInterpolation(alignToRampCyclePose.getHeading(), rampCycleCollectPose.getHeading())
                 .build();
         leaveRamp = () -> follower.pathBuilder()
                 .addPath(new BezierLine(rampCycleCollectPose, alignToRampCyclePose))
@@ -114,31 +117,38 @@ public class BlueTeleOP extends CommandOpMode {
 
         follower = Constants.createFollower(hardwareMap);
         super.reset();
-        limelight = new LimeLight(hardwareMap, Alliance.BLUE);
+        limelight = new LimeLight(hardwareMap, Alliance.RED);
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap);
-        turret = new Turret(hardwareMap, follower, Alliance.BLUE);
+        turret = new Turret(hardwareMap, follower, Alliance.RED);
         variables = new OpModeStorage();
         follower.startTeleopDrive();
         limelight.setPose(follower.getPose());
         variables.setIfAutoDrive(false);
+
+        //ctrls
         Button shootButton = new GamepadButton(
                 controlPanel, GamepadKeys.Button.RIGHT_BUMPER
         ).whenPressed(
                 new ShootAndHold(shooter, intake, turret, follower, variables)
         );
+
         Button intakeButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.LEFT_BUMPER
         ).whenPressed(new IntakeRun(intake)).whenReleased(new IntakeKill(intake));
+
         Button ejectButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.DPAD_DOWN
         ).whenPressed(new IntakeEject(intake)).whenReleased(new IntakeKill(intake));
+
         Button humanPlayerCollectButton = new GamepadButton(
                 controlPanel, GamepadKeys.Button.TRIANGLE
         ).whenPressed(new CollectFromHuman(toHumanPlayer, collectViaHumanPlayer, leaveHumanPlayer, follower, intake, variables));
+
         Button rampCollectButton = new GamepadButton(
                 controlPanel, GamepadKeys.Button.SQUARE
         ).whenPressed(new CollectFromHuman(toRamp, collectViaRamp, leaveRamp, follower, intake, variables));
+
         Button toCloseZoneButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.DPAD_LEFT
         ).whenPressed(new SequentialCommandGroup(
@@ -146,6 +156,7 @@ public class BlueTeleOP extends CommandOpMode {
                 new FollowPathCommand(follower, toCloseZone.get()),
                 new InstantCommand(() -> variables.setIfAutoDrive(false))
         ));
+
         Button toFarZoneButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.DPAD_RIGHT
         ).whenPressed(new SequentialCommandGroup(
@@ -153,6 +164,7 @@ public class BlueTeleOP extends CommandOpMode {
                 new FollowPathCommand(follower, toFarZone.get()),
                 new InstantCommand(() -> variables.setIfAutoDrive(false))
         ));
+
         Button park = new GamepadButton(
                 controlPanel, GamepadKeys.Button.PS
         ).whenPressed(new SequentialCommandGroup(
@@ -160,16 +172,18 @@ public class BlueTeleOP extends CommandOpMode {
                 new FollowPathCommand(follower, autoPark.get()),
                 new InstantCommand(() -> variables.setIfAutoDrive(false))
         ));
+
         Button openStopper = new GamepadButton(
                 controlPanel, GamepadKeys.Button.OPTIONS
         ).whenPressed(new OpenStopper(intake)).whenReleased(new CloseStopper(intake));
 
         Button escape = new GamepadButton(
                 controlPanel, GamepadKeys.Button.CROSS
-        ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> variables.setIfAutoDrive(false));
+        ).whenPressed(() -> variables.setIfAutoDrive(false));
+
         Button interpLUTShoot = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_UP
-        ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> shooter.interpLUTShoot(turret.distanceToGoal));
+        ).whenPressed(() -> shooter.interpLUTShoot(turret.distanceToGoal));
         Button basicCloseZoneShoot = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_LEFT
         ).whenPressed(() -> shooter.velocity(closeZoneVelo));
@@ -178,7 +192,7 @@ public class BlueTeleOP extends CommandOpMode {
         ).whenPressed(() -> shooter.velocity(farZoneVelo));
         Button killShooter = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_DOWN
-        ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> shooter.velocity(0));
+        ).whenPressed(() -> shooter.velocity(0)).whenPressed(() -> cancelShooterCommands = true);
         Button fullPowerButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.SHARE
         ).whenPressed(() -> driveDivisor = 1).whenReleased(() -> driveDivisor = 2);
@@ -203,26 +217,35 @@ public class BlueTeleOP extends CommandOpMode {
         if (limelight.canRelocalize()){
             follower.setPose(limelight.getPoseFromLimelight());
         }
+        if (cancelShooterCommands && shooter.getCurrentCommand() != null) {
+            shooter.getCurrentCommand().cancel();
+            cancelShooterCommands = false;
+        }
+        if (cancelCommands) {
+            if (shooter.getCurrentCommand() != null) {
+                shooter.getCurrentCommand().cancel();
+                cancelShooterCommands = false;
+            }
+            if (intake.getCurrentCommand() != null) {
+                intake.getCurrentCommand().cancel();
+                cancelShooterCommands = false;
+            }
+            if (turret.getCurrentCommand() != null) {
+                turret.getCurrentCommand().cancel();
+                cancelShooterCommands = false;
+            }
+            follower.startTeleopDrive();
+        }
         follower.setTeleOpDrive(-gamepad1.left_stick_y/driveDivisor, -gamepad1.left_stick_x/driveDivisor, -gamepad1.right_stick_x/driveDivisor, true);
 
         follower.update();
 
-        telemetryData.addData("--------------------------", "");
-        telemetryData.addData("DRIVECHAIN TELEMETRY", "");
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
         telemetryData.addData("Heading", follower.getPose().getHeading());
-        telemetryData.addData("--------------------------", "");
-        telemetryData.addData("SHOOTER TELEMETRY", "");
-        telemetryData.addData("Shooter CURRENT speed", shooter.getCurrentVelo());
-        telemetryData.addData("Shooter TARGET speed", shooter.getTargetVelo());
-        telemetryData.addData("Shooter POWER", shooter.getShooterPower());
-        telemetryData.addData("--------------------------", "");
-        telemetryData.addData("TURRET TELEMETRY", "");
-        telemetryData.addData("turret pos in ticks", turret.getPos());
-        telemetryData.addData("--------------------------", "");
-
         telemetryData.update();
     }
+
+
 
 }

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -14,14 +15,15 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Alliance;
 
-@Config
+@Configurable
 public class Turret extends SubsystemBase {
 
     MotorEx turret;
 
 
-    public static double lowerLimit = -110;
-    public static double upperLimit = 207.0642;
+
+    public static int lowerLimit = -110;
+    public static int upperLimit = 207;
 
 
 
@@ -89,6 +91,7 @@ public class Turret extends SubsystemBase {
 
         turretToGoalAngle =AngleUnit.normalizeDegrees(Math.toDegrees(robotPos.getHeading()) - robotToGoalAngle );
 
+
         FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
         FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal() );
         FtcDashboard.getInstance().getTelemetry().addData("turret drive gear pos", turret.getCurrentPosition());
@@ -100,12 +103,19 @@ public class Turret extends SubsystemBase {
     public void TurretSetPos(double PosDeg){
         double countPerDegree = turret.getCPR() / 360;
 
-        int turretTargetPos = (int) (PosDeg * (countPerDegree * gearRatio));/*
+        int turretTargetPos = (int) (PosDeg * (countPerDegree * gearRatio));
+        /*
         if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
             turretTargetPos -= (int) (360 * (countPerDegree * gearRatio));
         } else if (turretTargetPos > (int) (-185 * (countPerDegree * gearRatio))){
             turretTargetPos += (int) (360 * (countPerDegree * gearRatio));
-        }*/
+        }
+        */
+        if (turretTargetPos > upperLimit) {
+            turretTargetPos = upperLimit;
+        } else if (turretTargetPos < lowerLimit) {
+            turretTargetPos = lowerLimit;
+        }
 
         turret.setTargetPosition(turretTargetPos);
     }
@@ -122,6 +132,9 @@ public class Turret extends SubsystemBase {
     }
     public void stopTracking(){
         isTracking = false;
+    }
+    public int getPos() {
+        return turret.getCurrentPosition();
     }
     public boolean reachedTarget(){
         return turret.atTargetPosition();

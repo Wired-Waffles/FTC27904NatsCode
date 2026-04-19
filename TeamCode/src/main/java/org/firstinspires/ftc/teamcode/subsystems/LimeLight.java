@@ -23,6 +23,7 @@ public class LimeLight extends SubsystemBase {
         limelight.setPollRateHz(2);
         limelight.start();
         this.alliance = alliance;
+
     }
 
 
@@ -30,8 +31,8 @@ public class LimeLight extends SubsystemBase {
     public void periodic() {
         LLResult result = limelight.getLatestResult();
         this.res = result;
-        double robotYaw = pose.getHeading();
-        limelight.updateRobotOrientation(robotYaw);
+        //double robotYaw = pose.getHeading();
+        //limelight.updateRobotOrientation(robotYaw);
         /*
         if (result != null && result.isValid()) {
             Pose3D botpose_mt2 = result.getBotpose_MT2();

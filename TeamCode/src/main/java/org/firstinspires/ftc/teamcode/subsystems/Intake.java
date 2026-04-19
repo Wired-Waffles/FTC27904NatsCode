@@ -14,6 +14,7 @@ public class Intake extends SubsystemBase {
     public Intake(HardwareMap hardwareMap){
         intake = new MotorEx(hardwareMap, "intake");
         intake.setRunMode(Motor.RunMode.RawPower);
+        intake.setInverted(false);
         stopper = new ServoEx(hardwareMap, "stopper");
     }
 
@@ -38,4 +39,11 @@ public class Intake extends SubsystemBase {
     public void closeStopper(){
         stopper.set(0.5);
     }
+    public void setStopperPos(double pos){
+        stopper.set(pos);
+    }
+    public double getStopperPos(){
+        return stopper.getRawPosition();
+    }
+
 }

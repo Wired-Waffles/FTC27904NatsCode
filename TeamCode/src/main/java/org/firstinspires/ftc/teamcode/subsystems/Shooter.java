@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -16,56 +17,82 @@ public class Shooter extends SubsystemBase {
     private ServoEx hoodServo;
     InterpLUT speedInterpLUT = new InterpLUT();
     InterpLUT servoPosInterpLUT = new InterpLUT();
-    PIDFController shooterPIDF = new PIDFController(0.1,0,0,0.1);
+    PIDFController shooterPIDF = new PIDFController(0.00001,0,0,0);
+    SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.065, 0.00046, 0);
     double distance;
-    double targetVelo;
-    double power;
-
+    double targetVelo = 0;
+    boolean shooting = false;
+    double power = 0;
 
     @Override
     public void periodic(){
         FtcDashboard.getInstance().getTelemetry().addData("target velo", targetVelo);
         FtcDashboard.getInstance().getTelemetry().addData("current velo", shooter1.getVelocity());
         FtcDashboard.getInstance().getTelemetry().addData("current draw", shooter1.getCurrent(CurrentUnit.MILLIAMPS));
+        if (shooting) {
+            power = shooterPIDF.calculate(shooter1.getVelocity(), targetVelo) + feedforward.calculate(targetVelo);
+            shooter1.set(power);
+            shooter2.set(power);
+        } else {
+            shooter1.set(0);
+            shooter2.set(0);
+        }
     }
 
     public Shooter(final HardwareMap hardwareMap) {
         this.shooter1 = new MotorEx(hardwareMap, "shooter1");
         this.shooter2 = new MotorEx(hardwareMap, "shooter2");
         this.hoodServo = new ServoEx(hardwareMap, "hoodServo");
-        shooter1.setRunMode(MotorEx.RunMode.VelocityControl);
-        shooter2.setRunMode(Motor.RunMode.VelocityControl);
+        shooter1.setRunMode(MotorEx.RunMode.RawPower);
+        shooter2.setRunMode(Motor.RunMode.RawPower);
         shooter1.setInverted(true);
-        shooter1.setVeloCoefficients(1,0,0.1);
-        shooter2.setVeloCoefficients(1,0,0.1);
         //input then output
-        //so liek distance then tps oki
-        //random values so it doesnt like explode rn
-        //replace later
+        //so liek distance then tps ok
         //distace in inches btw
-        speedInterpLUT.add(10, 1800);
-        speedInterpLUT.add(20, 2000);
-        speedInterpLUT.add(30, 2300);
-        //etc etc
+        //speed interplut
+        speedInterpLUT.add(10, 850); //untested
+        speedInterpLUT.add(20, 900); //untested
+        speedInterpLUT.add(30, 970);
+        speedInterpLUT.add(40, 1050);
+        speedInterpLUT.add(50, 1050);
+        speedInterpLUT.add(60, 1150);
+        speedInterpLUT.add(70, 1200);
+        speedInterpLUT.add(80, 1250);
+
+        speedInterpLUT.add(125, 1500);
+        speedInterpLUT.add(136, 1550);
+
+        //hood interplut
         servoPosInterpLUT.add(10, 0);
-        servoPosInterpLUT.add(20, 0.1);
-        servoPosInterpLUT.add(30, 0.3);
+        servoPosInterpLUT.add(20, 0);
+        servoPosInterpLUT.add(30, 0);
+        servoPosInterpLUT.add(40, 0);
+        servoPosInterpLUT.add(50, 0);
+        servoPosInterpLUT.add(60, 0);
+        servoPosInterpLUT.add(70, 0);
+        servoPosInterpLUT.add(80, 0);
+
+        servoPosInterpLUT.add(125, 0.3);
+        servoPosInterpLUT.add(136, 0.3);
     }
 
     public void velocity(double targetVelocity){
-        double output = shooterPIDF.calculate(shooter1.getVelocity(), targetVelocity);
-        shooter1.set(output);
-        shooter2.set(output);
         //shooter1.setVelocity(targetVelocity);
         //shooter2.setVelocity(targetVelocity);
         targetVelo = targetVelocity;
-        power = output;
+        shooting = true;
     }
     public void hoodPos(double pos){
         hoodServo.set(pos);
     }
     public void setPIDFCoeffs(double kP, double kI, double kD, double kF){
         shooterPIDF.setPIDF(kP,kI,kD,kF);
+
+    }
+
+
+    public void setFeedforward(double kS, double kV ,double kA){
+        feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     }
     public void interpLUTShoot(double dist) {
         velocity(speedInterpLUT.get(dist));
@@ -92,6 +119,17 @@ public class Shooter extends SubsystemBase {
 
     public double getError(){
         return targetVelo-shooter1.getVelocity();
+    }
+    public double getkP() {
+        return shooterPIDF.getP();
+    }
+
+    public double getkV() {
+        return feedforward.kv;
+    }
+
+    public double getkS() {
+        return feedforward.ks;
     }
 
 }
