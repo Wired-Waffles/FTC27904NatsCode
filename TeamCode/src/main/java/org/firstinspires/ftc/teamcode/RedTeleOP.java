@@ -51,11 +51,14 @@ public class RedTeleOP extends CommandOpMode {
     Supplier<PathChain> toHumanPlayer, collectViaHumanPlayer, leaveHumanPlayer, toRamp, collectViaRamp, leaveRamp, autoPark, toCloseZone, toFarZone;
     OpModeStorage variables;
     public static boolean autoDrive;
-    double closeZoneVelo = 1800;
-    double farZoneVelo = 2500;
+    double closeZoneVelo = 1100;
+    double farZoneVelo = 1500;
     double driveDivisor = 2;
     boolean cancelShooterCommands = false;
     boolean cancelCommands = false;
+    public static double kp = 0.007;
+    public static double ks = 0.09;
+    public static double kv = 0.0004325;
 
     //Button shootButton, intakeButton, ejectButton, humanPlayerCollectButton, rampCollectButton, toCloseZoneButton, toFarZoneButton, parkButton, openStopper, escape, interpLUTShoot, basicCloseZoneShoot, basicFarZoneShoot, killShooter, fullPowerButton;
 
@@ -141,37 +144,37 @@ public class RedTeleOP extends CommandOpMode {
                 coreDriver, GamepadKeys.Button.DPAD_DOWN
         ).whenPressed(new IntakeEject(intake)).whenReleased(new IntakeKill(intake));
 
-        Button humanPlayerCollectButton = new GamepadButton(
-                controlPanel, GamepadKeys.Button.TRIANGLE
-        ).whenPressed(new CollectFromHuman(toHumanPlayer, collectViaHumanPlayer, leaveHumanPlayer, follower, intake, variables));
-
-        Button rampCollectButton = new GamepadButton(
-                controlPanel, GamepadKeys.Button.SQUARE
-        ).whenPressed(new CollectFromHuman(toRamp, collectViaRamp, leaveRamp, follower, intake, variables));
-
-        Button toCloseZoneButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_LEFT
-        ).whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> variables.setIfAutoDrive(true)),
-                new FollowPathCommand(follower, toCloseZone.get()),
-                new InstantCommand(() -> variables.setIfAutoDrive(false))
-        ));
-
-        Button toFarZoneButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_RIGHT
-        ).whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> variables.setIfAutoDrive(true)),
-                new FollowPathCommand(follower, toFarZone.get()),
-                new InstantCommand(() -> variables.setIfAutoDrive(false))
-        ));
-
-        Button park = new GamepadButton(
-                controlPanel, GamepadKeys.Button.PS
-        ).whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> variables.setIfAutoDrive(true)),
-                new FollowPathCommand(follower, autoPark.get()),
-                new InstantCommand(() -> variables.setIfAutoDrive(false))
-        ));
+//        Button humanPlayerCollectButton = new GamepadButton(
+//                controlPanel, GamepadKeys.Button.TRIANGLE
+//        ).whenPressed(new CollectFromHuman(toHumanPlayer, collectViaHumanPlayer, leaveHumanPlayer, follower, intake, variables));
+//
+//        Button rampCollectButton = new GamepadButton(
+//                controlPanel, GamepadKeys.Button.SQUARE
+//        ).whenPressed(new CollectFromHuman(toRamp, collectViaRamp, leaveRamp, follower, intake, variables));
+//
+//        Button toCloseZoneButton = new GamepadButton(
+//                coreDriver, GamepadKeys.Button.DPAD_LEFT
+//        ).whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> variables.setIfAutoDrive(true)),
+//                new FollowPathCommand(follower, toCloseZone.get()),
+//                new InstantCommand(() -> variables.setIfAutoDrive(false))
+//        ));
+//
+//        Button toFarZoneButton = new GamepadButton(
+//                coreDriver, GamepadKeys.Button.DPAD_RIGHT
+//        ).whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> variables.setIfAutoDrive(true)),
+//                new FollowPathCommand(follower, toFarZone.get()),
+//                new InstantCommand(() -> variables.setIfAutoDrive(false))
+//        ));
+//
+//        Button park = new GamepadButton(
+//                controlPanel, GamepadKeys.Button.PS
+//        ).whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> variables.setIfAutoDrive(true)),
+//                new FollowPathCommand(follower, autoPark.get()),
+//                new InstantCommand(() -> variables.setIfAutoDrive(false))
+//        ));
 
         Button openStopper = new GamepadButton(
                 controlPanel, GamepadKeys.Button.OPTIONS
@@ -212,7 +215,8 @@ public class RedTeleOP extends CommandOpMode {
             if (!gamepad2.isRumbling()){gamepad2.rumble(100);}
         }
 
-        shooter.setPIDFCoeffs(OpModeStorage.kp, OpModeStorage.ki,OpModeStorage.kd,OpModeStorage.kf);
+        shooter.setPIDFCoeffs(kp, 0, 0, 0);
+        shooter.setFeedforward(ks, kv, 0);
         limelight.setPose(follower.getPose());
         if (limelight.canRelocalize()){
             follower.setPose(limelight.getPoseFromLimelight());

@@ -22,8 +22,9 @@ public class Turret extends SubsystemBase {
 
 
 
-    public static int lowerLimit = -110;
-    public static int upperLimit = 207;
+    public static int lowerLimit = -625;
+    public static int upperLimit = 870;
+    public static double turretkP = 0.005;
 
 
 
@@ -45,7 +46,7 @@ public class Turret extends SubsystemBase {
     public double offsetX;
     double driveGearTeeth = 32.0;
     double bigGearTeeth = 110.0;
-    double gearRatio = driveGearTeeth/bigGearTeeth;
+    double gearRatio = bigGearTeeth/driveGearTeeth;
 
     Alliance alliance;
     boolean isTracking = false;
@@ -55,12 +56,16 @@ public class Turret extends SubsystemBase {
         goalY = y;
     }
     Follower follower;
+    Pose robotPos;
 
     public Turret(HardwareMap hardwareMap, Follower follower, Alliance alliance) {
         turret = new MotorEx(hardwareMap, "turret", Motor.GoBILDA.RPM_223);
         turret.setRunMode(Motor.RunMode.PositionControl);
-        turret.setInverted(true);
+        turret.setInverted(false);
         turret.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        turret.resetEncoder();
+        turret.setTargetPosition(0);
+        turret.set(1);
 
 
         this.follower = follower;
@@ -79,18 +84,17 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Pose robotPos = follower.getPose();
+        robotPos = follower.getPose();
 
 
         heading = robotPos.getHeading();
         double dx = goalX-robotPos.getX();
         double dy = goalY-robotPos.getY();
 
-        robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));//direction
-        distanceToGoal = Math.hypot(dx,dy);//magnitude
+        robotToGoalAngle = Math.toDegrees(Math.atan2(dx, dy));
 
-        turretToGoalAngle =AngleUnit.normalizeDegrees(Math.toDegrees(robotPos.getHeading()) - robotToGoalAngle );
 
+        turretToGoalAngle = robotToGoalAngle - Math.toDegrees(robotPos.getHeading());
 
         FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
         FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal() );
@@ -101,9 +105,9 @@ public class Turret extends SubsystemBase {
     }
 
     public void TurretSetPos(double PosDeg){
-        double countPerDegree = turret.getCPR() / 360;
+        double countPerDegree = (turret.getCPR() * gearRatio) / 360.0;
 
-        int turretTargetPos = (int) (PosDeg * (countPerDegree * gearRatio));
+        int turretTargetPos = (int) (PosDeg * countPerDegree);
         /*
         if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
             turretTargetPos -= (int) (360 * (countPerDegree * gearRatio));
@@ -118,6 +122,10 @@ public class Turret extends SubsystemBase {
         }
 
         turret.setTargetPosition(turretTargetPos);
+        turret.setPositionCoefficient(turretkP);
+        if (!turret.atTargetPosition()) {
+            turret.set(1);
+        }
     }
 
     public double getTurretToGoalAngle() {

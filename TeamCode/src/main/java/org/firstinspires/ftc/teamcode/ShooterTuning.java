@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -45,6 +46,7 @@ public class ShooterTuning extends CommandOpMode {
     public void initialize() {
         super.reset();
         follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(new Pose(72, 72, 0));
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap);
         limelight = new LimeLight(hardwareMap, Alliance.RED);
@@ -76,7 +78,11 @@ public class ShooterTuning extends CommandOpMode {
         Button setShooterPosButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.CIRCLE
         ).whenPressed(new InstantCommand(() -> shooter.hoodPos(hoodPos)));
+        Button manualTurret = new GamepadButton(
+                coreDriver, GamepadKeys.Button.TRIANGLE
+        ).whenPressed(new InstantCommand(() -> turret.TurretSetPos(90)));
     follower.startTeleopDrive();
+    turret.startTracking();
 
     }
 
@@ -91,6 +97,12 @@ public class ShooterTuning extends CommandOpMode {
         telemetryData.addData("kp", kp);
         telemetryData.addData("kv", kv);
         telemetryData.addData("ks", ks);
+        telemetryData.addData("X", follower.getPose().getX());
+        telemetryData.addData("Y", follower.getPose().getY());
+        telemetryData.addData("Turret distance to goal", turret.getDistanceToGoal());
+        telemetryData.addData("Turret angle to goal", turret.getTurretToGoalAngle());
+        telemetryData.addData("Turret pos", turret.getPos());
+        telemetryData.addData("Robot pos", follower.getPose());
         telemetryM.addData( "shooter velo",shooter.getCurrentVelo());
         telemetryM.addData("target velo", shooter.getTargetVelo());
         telemetryM.addData("kp", kp);
@@ -98,11 +110,13 @@ public class ShooterTuning extends CommandOpMode {
         telemetryM.addData("ks", ks);
         telemetryM.addData("power", shooter.getShooterPower());
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+
         telemetryM.update();
         telemetryData.update();
 
         if (limelight.canRelocalize()) {
-            follower.setPose(limelight.getPoseFromLimelight());
+            //follower.setPose(limelight.getPoseFromLimelight());
+            follower.setPose(new Pose(limelight.getPoseFromLimelight().getX(), limelight.getPoseFromLimelight().getY(), follower.getHeading()));
         }
         follower.update();
     }

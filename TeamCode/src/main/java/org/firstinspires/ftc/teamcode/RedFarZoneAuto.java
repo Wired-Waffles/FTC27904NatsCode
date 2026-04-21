@@ -6,6 +6,7 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
@@ -19,97 +20,11 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
-
+@Autonomous (name = "red far")
 public class RedFarZoneAuto extends CommandOpMode {
     Follower follower;
     PathChain pickup1, pickup1ToShoot, pickup2, pickup2ToShoot, pickup3, pickup3ToShoot, leave;
-    Pose startPose = new Pose(121, 124
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            , 90);
+    Pose startPose = new Pose(121, 124, 90);
     Pose pickup1Pose = new Pose(134, 9);
     Pose shootPose = new Pose(86, 12, 90);
     Pose pickup2Pose = new Pose(133, 36);

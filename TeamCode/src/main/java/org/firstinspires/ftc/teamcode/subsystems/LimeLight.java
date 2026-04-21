@@ -12,12 +12,14 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.Alliance;
 
+
 public class LimeLight extends SubsystemBase {
     Limelight3A limelight;
     Pose pose;
     Pose3D limelightPose;
     LLResult res;
     Alliance alliance;
+    boolean canRelocalize = false;
     public LimeLight(HardwareMap hardwareMap, Alliance alliance){
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(2);
@@ -49,6 +51,7 @@ public class LimeLight extends SubsystemBase {
                 double y = botpose_mt1.getPosition().y;
                 FtcDashboard.getInstance().getTelemetry().addData("MT1 Location", "(" + x + ", " + y + ")");
                 limelightPose = botpose_mt1;
+                canRelocalize = true;
             }
         }
     }

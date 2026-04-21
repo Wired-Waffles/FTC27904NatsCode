@@ -56,6 +56,10 @@ public class BlueTeleOP extends CommandOpMode {
     double closeZoneVelo = 1100;
     double farZoneVelo = 1500;
     double driveDivisor = 2;
+    public static double kp = 0.007;
+    public static double ks = 0.09;
+    public static double kv = 0.0004325;
+    int turretPos = 0;
 
 
 
@@ -119,73 +123,68 @@ public class BlueTeleOP extends CommandOpMode {
         intake = new Intake(hardwareMap);
         turret = new Turret(hardwareMap, follower, Alliance.BLUE);
         variables = new OpModeStorage();
+        follower.setStartingPose(new Pose(56, 9, 90));
         follower.startTeleopDrive();
         limelight.setPose(follower.getPose());
         variables.setIfAutoDrive(false);
-        Button shootButton = new GamepadButton(
-                controlPanel, GamepadKeys.Button.RIGHT_BUMPER
-        ).whenPressed(
-                new ShootAndHold(shooter, intake, turret, follower, variables)
-        );
+
+//        Button shootButton = new GamepadButton(
+//                controlPanel, GamepadKeys.Button.RIGHT_BUMPER
+//        ).whenPressed(
+//                new ShootAndHold(shooter, intake, turret, follower, variables)
+//        );
         Button intakeButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.LEFT_BUMPER
+                controlPanel, GamepadKeys.Button.LEFT_BUMPER
         ).whenPressed(new IntakeRun(intake)).whenReleased(new IntakeKill(intake));
         Button ejectButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_DOWN
+                controlPanel, GamepadKeys.Button.DPAD_DOWN
         ).whenPressed(new IntakeEject(intake)).whenReleased(new IntakeKill(intake));
-        Button humanPlayerCollectButton = new GamepadButton(
-                controlPanel, GamepadKeys.Button.TRIANGLE
-        ).whenPressed(new CollectFromHuman(toHumanPlayer, collectViaHumanPlayer, leaveHumanPlayer, follower, intake, variables));
-        Button rampCollectButton = new GamepadButton(
-                controlPanel, GamepadKeys.Button.SQUARE
-        ).whenPressed(new CollectFromHuman(toRamp, collectViaRamp, leaveRamp, follower, intake, variables));
-        Button toCloseZoneButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_LEFT
-        ).whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> variables.setIfAutoDrive(true)),
-                new FollowPathCommand(follower, toCloseZone.get()),
-                new InstantCommand(() -> variables.setIfAutoDrive(false))
-        ));
-        Button toFarZoneButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_RIGHT
-        ).whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> variables.setIfAutoDrive(true)),
-                new FollowPathCommand(follower, toFarZone.get()),
-                new InstantCommand(() -> variables.setIfAutoDrive(false))
-        ));
-        Button park = new GamepadButton(
-                controlPanel, GamepadKeys.Button.PS
-        ).whenPressed(new SequentialCommandGroup(
-                new InstantCommand(() -> variables.setIfAutoDrive(true)),
-                new FollowPathCommand(follower, autoPark.get()),
-                new InstantCommand(() -> variables.setIfAutoDrive(false))
-        ));
-        Button openStopper = new GamepadButton(
-                controlPanel, GamepadKeys.Button.OPTIONS
-        ).whenPressed(new OpenStopper(intake)).whenReleased(new CloseStopper(intake));
+//        Button humanPlayerCollectButton = new GamepadButton(
+//                controlPanel, GamepadKeys.Button.TRIANGLE
+//        ).whenPressed(new CollectFromHuman(toHumanPlayer, collectViaHumanPlayer, leaveHumanPlayer, follower, intake, variables));
+//        Button rampCollectButton = new GamepadButton(
+//                controlPanel, GamepadKeys.Button.SQUARE
+//        ).whenPressed(new CollectFromHuman(toRamp, collectViaRamp, leaveRamp, follower, intake, variables));
+//        Button toCloseZoneButton = new GamepadButton(
+//                coreDriver, GamepadKeys.Button.DPAD_LEFT
+//        ).whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> variables.setIfAutoDrive(true)),
+//                new FollowPathCommand(follower, toCloseZone.get()),
+//                new InstantCommand(() -> variables.setIfAutoDrive(false))
+//        ));
+//        Button toFarZoneButton = new GamepadButton(
+//                coreDriver, GamepadKeys.Button.DPAD_RIGHT
+//        ).whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> variables.setIfAutoDrive(true)),
+//                new FollowPathCommand(follower, toFarZone.get()),
+//                new InstantCommand(() -> variables.setIfAutoDrive(false))
+//        ));
+//        Button park = new GamepadButton(
+//                controlPanel, GamepadKeys.Button.PS
+//        ).whenPressed(new SequentialCommandGroup(
+//                new InstantCommand(() -> variables.setIfAutoDrive(true)),
+//                new FollowPathCommand(follower, autoPark.get()),
+//                new InstantCommand(() -> variables.setIfAutoDrive(false))
+//        ));
+//        Button openStopper = new GamepadButton(
+//                controlPanel, GamepadKeys.Button.OPTIONS
+//        ).whenPressed(new OpenStopper(intake)).whenReleased(new CloseStopper(intake));
 
-        Button escape = new GamepadButton(
-                controlPanel, GamepadKeys.Button.CROSS
-        ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> variables.setIfAutoDrive(false));
         Button interpLUTShoot = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_UP
-        ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> shooter.interpLUTShoot(turret.distanceToGoal));
+        ).whenPressed(() -> shooter.interpLUTShoot(turret.distanceToGoal));
         Button basicCloseZoneShoot = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_LEFT
-        ).whenPressed(() -> shooter.velocity(closeZoneVelo));
+        ).whenPressed(() -> shooter.velocity(closeZoneVelo)).whenPressed(() -> shooter.hoodPos(0));
         Button basicFarZoneShoot = new GamepadButton(
                 controlPanel, GamepadKeys.Button.DPAD_RIGHT
-        ).whenPressed(() -> shooter.velocity(farZoneVelo));
+        ).whenPressed(() -> shooter.velocity(farZoneVelo)).whenPressed(() -> shooter.hoodPos(0.3));
         Button killShooter = new GamepadButton(
-                controlPanel, GamepadKeys.Button.DPAD_DOWN
-        ).cancelWhenPressed(shooter.getCurrentCommand()).whenPressed(() -> shooter.velocity(0));
+                controlPanel, GamepadKeys.Button.SQUARE
+        ).whenPressed(() -> shooter.velocity(0));
         Button fullPowerButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.SHARE
         ).whenPressed(() -> driveDivisor = 1).whenReleased(() -> driveDivisor = 2);
-
-
-
-
 
 
     }
@@ -193,22 +192,24 @@ public class BlueTeleOP extends CommandOpMode {
     @Override
     public void run() {
         super.run();
-        if (shooter.getError() > - 50 && shooter.getError() < 50 && shooter.getTargetVelo() > 0){
-            if (!gamepad1.isRumbling()){gamepad1.rumble(100);}
-            if (!gamepad2.isRumbling()){gamepad2.rumble(100);}
-        }
-
-        shooter.setPIDFCoeffs(OpModeStorage.kp, OpModeStorage.ki,OpModeStorage.kd,OpModeStorage.kf);
+//        if (shooter.getError() > - 50 && shooter.getError() < 50 && shooter.getTargetVelo() > 0){
+//            if (!gamepad1.isRumbling()){gamepad1.rumble(100);}
+//            if (!gamepad2.isRumbling()){gamepad2.rumble(100);}
+//        }
+        shooter.setPIDFCoeffs(kp, 0, 0, 0);
+        shooter.setFeedforward(ks, kv, 0);
         limelight.setPose(follower.getPose());
         if (limelight.canRelocalize()){
-            follower.setPose(limelight.getPoseFromLimelight());
+            follower.setPose(new Pose(limelight.getPoseFromLimelight().getX(), limelight.getPoseFromLimelight().getY(), follower.getHeading()));
         }
         follower.setTeleOpDrive(-gamepad1.left_stick_y/driveDivisor, -gamepad1.left_stick_x/driveDivisor, -gamepad1.right_stick_x/driveDivisor, true);
 
         follower.update();
+        turret.TurretSetPos(turretPos);
+        turretPos = Math.round(gamepad1.right_stick_x * 50);
 
         telemetryData.addData("--------------------------", "");
-        telemetryData.addData("DRIVECHAIN TELEMETRY", "");
+        telemetryData.addData("DRIVETRAIN TELEMETRY", "");
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
         telemetryData.addData("Heading", follower.getPose().getHeading());

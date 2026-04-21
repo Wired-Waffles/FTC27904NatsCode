@@ -34,10 +34,10 @@ public class Intake extends SubsystemBase {
         intake.set(-0.3);
     }
     public void openStopper(){
-        stopper.set(0);
+        stopper.set(0.5);
     }
     public void closeStopper(){
-        stopper.set(0.5);
+        stopper.set(0.7);
     }
     public void setStopperPos(double pos){
         stopper.set(pos);
