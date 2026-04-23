@@ -24,7 +24,7 @@ public class Turret extends SubsystemBase {
 
     public static int lowerLimit = -625;
     public static int upperLimit = 870;
-    public static double turretkP = 0.005;
+    public static double turretkP = 0.01;
 
 
 
@@ -61,7 +61,7 @@ public class Turret extends SubsystemBase {
     public Turret(HardwareMap hardwareMap, Follower follower, Alliance alliance) {
         turret = new MotorEx(hardwareMap, "turret", Motor.GoBILDA.RPM_223);
         turret.setRunMode(Motor.RunMode.PositionControl);
-        turret.setInverted(false);
+        turret.setInverted(true);
         turret.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         turret.resetEncoder();
         turret.setTargetPosition(0);
@@ -122,6 +122,22 @@ public class Turret extends SubsystemBase {
         }
 
         turret.setTargetPosition(turretTargetPos);
+        turret.setPositionCoefficient(turretkP);
+        if (!turret.atTargetPosition()) {
+            turret.set(1);
+        }
+    }
+
+    public void TurretRAWSetPos(int pos){
+        /*
+        if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
+            turretTargetPos -= (int) (360 * (countPerDegree * gearRatio));
+        } else if (turretTargetPos > (int) (-185 * (countPerDegree * gearRatio))){
+            turretTargetPos += (int) (360 * (countPerDegree * gearRatio));
+        }
+        */
+
+        turret.setTargetPosition(pos);
         turret.setPositionCoefficient(turretkP);
         if (!turret.atTargetPosition()) {
             turret.set(1);

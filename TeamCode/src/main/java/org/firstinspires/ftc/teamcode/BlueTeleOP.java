@@ -7,24 +7,14 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.button.Button;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
-
-import org.firstinspires.ftc.teamcode.commands.CloseStopper;
-import org.firstinspires.ftc.teamcode.commands.CollectFromHuman;
 import org.firstinspires.ftc.teamcode.commands.IntakeEject;
 import org.firstinspires.ftc.teamcode.commands.IntakeKill;
 import org.firstinspires.ftc.teamcode.commands.IntakeRun;
-import org.firstinspires.ftc.teamcode.commands.OpenStopper;
-import org.firstinspires.ftc.teamcode.commands.ShootAllBalls;
-import org.firstinspires.ftc.teamcode.commands.ShootAndHold;
-import org.firstinspires.ftc.teamcode.commands.Wait;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.LimeLight;
@@ -53,7 +43,7 @@ public class BlueTeleOP extends CommandOpMode {
     Supplier<PathChain> toHumanPlayer, collectViaHumanPlayer, leaveHumanPlayer, toRamp, collectViaRamp, leaveRamp, autoPark, toCloseZone, toFarZone;
     OpModeStorage variables;
     public static boolean autoDrive;
-    double closeZoneVelo = 1100;
+    double closeZoneVelo = 1150;
     double farZoneVelo = 1500;
     double driveDivisor = 2;
     public static double kp = 0.007;
@@ -182,9 +172,10 @@ public class BlueTeleOP extends CommandOpMode {
         Button killShooter = new GamepadButton(
                 controlPanel, GamepadKeys.Button.SQUARE
         ).whenPressed(() -> shooter.velocity(0));
+
         Button fullPowerButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.SHARE
-        ).whenPressed(() -> driveDivisor = 1).whenReleased(() -> driveDivisor = 2);
+        ).whenPressed(() -> driveDivisor = 5).whenReleased(() -> driveDivisor = 2);
 
 
     }
@@ -205,8 +196,8 @@ public class BlueTeleOP extends CommandOpMode {
         follower.setTeleOpDrive(-gamepad1.left_stick_y/driveDivisor, -gamepad1.left_stick_x/driveDivisor, -gamepad1.right_stick_x/driveDivisor, true);
 
         follower.update();
-        turret.TurretSetPos(turretPos);
-        turretPos = Math.round(gamepad1.right_stick_x * 50);
+        turret.TurretSetPos(0);
+//        turret.startTracking();
 
         telemetryData.addData("--------------------------", "");
         telemetryData.addData("DRIVETRAIN TELEMETRY", "");
@@ -221,6 +212,17 @@ public class BlueTeleOP extends CommandOpMode {
         telemetryData.addData("--------------------------", "");
         telemetryData.addData("TURRET TELEMETRY", "");
         telemetryData.addData("turret pos in ticks", turret.getPos());
+        telemetryData.addData("turret angle", turret.getTurretToGoalAngle());
+        telemetryData.addData("turret distance", turret.getDistanceToGoal());
+        telemetryData.addData("turret reached", turret.reachedTarget());
+        telemetryData.addData("--------------------------", "");
+        telemetryData.addData("LIMELIGHT TELEMETRY", "");
+        telemetryData.addData("canRelocalise", limelight.canRelocalize());
+        if (limelight.canRelocalize()) {
+            telemetryData.addData("limelight x", limelight.getPoseFromLimelight().getX());
+            telemetryData.addData("limelight y", limelight.getPoseFromLimelight().getY());
+            telemetryData.addData("limelight heading", limelight.getPoseFromLimelight().getHeading());
+        }
         telemetryData.addData("--------------------------", "");
 
         telemetryData.update();

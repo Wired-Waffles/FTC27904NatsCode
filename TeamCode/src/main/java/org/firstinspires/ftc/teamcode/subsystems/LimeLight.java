@@ -52,6 +52,8 @@ public class LimeLight extends SubsystemBase {
                 FtcDashboard.getInstance().getTelemetry().addData("MT1 Location", "(" + x + ", " + y + ")");
                 limelightPose = botpose_mt1;
                 canRelocalize = true;
+            } else {
+                canRelocalize = false;
             }
         }
     }
@@ -69,6 +71,6 @@ public class LimeLight extends SubsystemBase {
         limelight.start();
     }
     public boolean canRelocalize(){
-        return res != null && res.isValid() && limelightPose != null;
+        return canRelocalize;
     }
 }

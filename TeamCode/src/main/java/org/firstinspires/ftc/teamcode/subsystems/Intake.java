@@ -23,7 +23,7 @@ public class Intake extends SubsystemBase {
     }
 
     public void eject(){
-        intake.set(1);
+        intake.set(0.5);
     }
 
     public void kill(){
