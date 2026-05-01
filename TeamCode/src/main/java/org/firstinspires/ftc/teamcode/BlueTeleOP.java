@@ -196,6 +196,7 @@ public class BlueTeleOP extends CommandOpMode {
         follower.setTeleOpDrive(-gamepad1.left_stick_y/driveDivisor, -gamepad1.left_stick_x/driveDivisor, -gamepad1.right_stick_x/driveDivisor, true);
 
         follower.update();
+        turret.updateTurretFollower(follower);
         turret.TurretSetPos(0);
 //        turret.startTracking();
 

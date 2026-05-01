@@ -79,6 +79,9 @@ public class Turret extends SubsystemBase {
         }
 
     }
+    public void updateTurretFollower(Follower follower) {
+        this.follower = follower;
+    }
 
 
 
@@ -104,17 +107,19 @@ public class Turret extends SubsystemBase {
         }
     }
 
-    public void TurretSetPos(double PosDeg){
+    public void TurretSetPos(double PosDeg) {
         double countPerDegree = (turret.getCPR() * gearRatio) / 360.0;
 
-        int turretTargetPos = (int) (PosDeg * countPerDegree);
-        /*
-        if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
-            turretTargetPos -= (int) (360 * (countPerDegree * gearRatio));
-        } else if (turretTargetPos > (int) (-185 * (countPerDegree * gearRatio))){
-            turretTargetPos += (int) (360 * (countPerDegree * gearRatio));
-        }
-        */
+        int turretTargetPos = (int) Math.round(PosDeg * countPerDegree);
+
+
+//        if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
+//            turretTargetPos -= (int) (360 * (countPerDegree * gearRatio));
+//        } else if (turretTargetPos > (int) (-185 * (countPerDegree * gearRatio))){
+//            turretTargetPos += (int) (360 * (countPerDegree * gearRatio));
+//        }
+
+
         if (turretTargetPos > upperLimit) {
             turretTargetPos = upperLimit;
         } else if (turretTargetPos < lowerLimit) {
@@ -129,14 +134,6 @@ public class Turret extends SubsystemBase {
     }
 
     public void TurretRAWSetPos(int pos){
-        /*
-        if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
-            turretTargetPos -= (int) (360 * (countPerDegree * gearRatio));
-        } else if (turretTargetPos > (int) (-185 * (countPerDegree * gearRatio))){
-            turretTargetPos += (int) (360 * (countPerDegree * gearRatio));
-        }
-        */
-
         turret.setTargetPosition(pos);
         turret.setPositionCoefficient(turretkP);
         if (!turret.atTargetPosition()) {
@@ -163,4 +160,5 @@ public class Turret extends SubsystemBase {
     public boolean reachedTarget(){
         return turret.atTargetPosition();
     }
+
 }

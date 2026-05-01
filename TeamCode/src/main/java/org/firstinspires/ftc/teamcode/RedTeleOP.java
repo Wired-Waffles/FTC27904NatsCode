@@ -244,6 +244,8 @@ public class RedTeleOP extends CommandOpMode {
 
         follower.update();
 
+        turret.updateTurretFollower(follower);
+
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
         telemetryData.addData("Heading", follower.getPose().getHeading());

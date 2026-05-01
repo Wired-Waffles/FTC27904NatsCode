@@ -65,7 +65,7 @@ public class RedCloseZoneAuto extends CommandOpMode {
         follower.setStartingPose(startPose);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
-        turret = new Turret(hardwareMap, follower, Alliance.BLUE);
+        turret = new Turret(hardwareMap, follower, Alliance.RED);
         buildPaths();
         schedule(
                 new FollowPathCommand(follower, startToShoot),
