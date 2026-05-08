@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opModes.utils;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -13,12 +13,11 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
+import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.commands.IntakeKill;
 import org.firstinspires.ftc.teamcode.commands.IntakeRun;
-import org.firstinspires.ftc.teamcode.commands.ShootAndHold;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 @TeleOp(name = "Stopper tuning")
@@ -37,7 +36,7 @@ public class StopperTuning extends CommandOpMode {
     public void initialize() {
         super.reset();
         follower = Constants.createFollower(hardwareMap);
-        intake = new Intake(hardwareMap);
+        intake = new Intake(hardwareMap, telemetry);
         turret = new Turret(hardwareMap, follower, Alliance.RED);
         coreDriver = new GamepadEx(gamepad1);
         controlPanel = new GamepadEx(gamepad2);

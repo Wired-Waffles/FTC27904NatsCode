@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.Alliance;
 
 
-public class LimeLight extends SubsystemBase {
+public class LimeLight {
     Limelight3A limelight;
     Pose pose;
     Pose3D limelightPose;
@@ -28,9 +28,7 @@ public class LimeLight extends SubsystemBase {
 
     }
 
-
-    @Override
-    public void periodic() {
+    public void run() {
         LLResult result = limelight.getLatestResult();
         this.res = result;
         //double robotYaw = pose.getHeading();

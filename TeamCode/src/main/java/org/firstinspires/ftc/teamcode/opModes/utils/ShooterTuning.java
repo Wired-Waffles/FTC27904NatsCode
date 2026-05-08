@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opModes.utils;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -14,8 +14,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
-import org.firstinspires.ftc.teamcode.commands.IntakeKill;
-import org.firstinspires.ftc.teamcode.commands.IntakeRun;
+import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.LimeLight;
@@ -48,7 +47,7 @@ public class ShooterTuning extends CommandOpMode {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(72, 72, 0));
         shooter = new Shooter(hardwareMap);
-        intake = new Intake(hardwareMap);
+        intake = new Intake(hardwareMap, telemetry);
         limelight = new LimeLight(hardwareMap, Alliance.RED);
         turret = new Turret(hardwareMap, follower, Alliance.RED);
 
@@ -74,7 +73,7 @@ public class ShooterTuning extends CommandOpMode {
         ).whenPressed(new InstantCommand(()-> hoodPos-=0.05));
         Button intakeButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.LEFT_BUMPER
-        ).whenPressed(new IntakeRun(intake)).whenReleased(new IntakeKill(intake));
+        ).whenPressed(new InstantCommand(() -> intake.run())).whenReleased(new InstantCommand(() -> intake.kill()));
         Button setShooterPosButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.CIRCLE
         ).whenPressed(new InstantCommand(() -> shooter.hoodPos(hoodPos)));

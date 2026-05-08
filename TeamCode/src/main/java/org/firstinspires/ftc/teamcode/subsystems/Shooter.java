@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
+import com.pedropathing.ivy.Command;
+import static com.pedropathing.ivy.commands.Commands.*;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -6,12 +8,11 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
-import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
-public class Shooter extends SubsystemBase {
+public class Shooter {
     private MotorEx shooter1;
     private MotorEx shooter2;
     private ServoEx hoodServo;
@@ -24,8 +25,7 @@ public class Shooter extends SubsystemBase {
     boolean shooting = false;
     double power = 0;
 
-    @Override
-    public void periodic(){
+    public void run(){
         FtcDashboard.getInstance().getTelemetry().addData("target velo", targetVelo);
         FtcDashboard.getInstance().getTelemetry().addData("current velo", shooter1.getVelocity());
         FtcDashboard.getInstance().getTelemetry().addData("current draw", shooter1.getCurrent(CurrentUnit.MILLIAMPS));
@@ -77,8 +77,6 @@ public class Shooter extends SubsystemBase {
     }
 
     public void velocity(double targetVelocity){
-        //shooter1.setVelocity(targetVelocity);
-        //shooter2.setVelocity(targetVelocity);
         targetVelo = targetVelocity;
         shooting = true;
     }
@@ -130,6 +128,27 @@ public class Shooter extends SubsystemBase {
 
     public double getkS() {
         return feedforward.ks;
+    }
+    public void kill() {
+        shooting = false;
+    }
+    public Command setVelo(double velo) {
+        return instant(() -> velocity(velo)).requiring(shooter1, shooter2);
+    }
+    // beware using this command will use lots of power to slow down the shooter w/ pidf,
+    // so basically it'll run backwards until the flywheel is stopped
+    // use if stopper is failing, or to stop shooting someone in the head
+    public Command hardStop() {
+        return instant(() -> velocity(0)).requiring(shooter1, shooter2);
+    }
+    //sets power to 0 and turn pidf off
+    public Command off() {
+        return instant(this::kill).requiring(shooter1, shooter2);
+    }
+    //only use this when testing or just setting calcing interplut with a button
+    //ideally run regular method in main loop
+    public Command interpLUTVelo(double distance) {
+        return instant(() -> interpLUTShoot(distance)).requiring(shooter1, shooter2);
     }
 
 }

@@ -14,9 +14,10 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Alliance;
+import com.pedropathing.ivy.Command;
 
 @Configurable
-public class Turret extends SubsystemBase {
+public class Turret{
 
     MotorEx turret;
 
@@ -84,9 +85,7 @@ public class Turret extends SubsystemBase {
     }
 
 
-
-    @Override
-    public void periodic() {
+    public void run() {
         robotPos = follower.getPose();
 
 
@@ -94,7 +93,7 @@ public class Turret extends SubsystemBase {
         double dx = goalX-robotPos.getX();
         double dy = goalY-robotPos.getY();
 
-        robotToGoalAngle = Math.toDegrees(Math.atan2(dx, dy));
+        robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));
 
 
         turretToGoalAngle = robotToGoalAngle - Math.toDegrees(robotPos.getHeading());
@@ -109,8 +108,8 @@ public class Turret extends SubsystemBase {
 
     public void TurretSetPos(double PosDeg) {
         double countPerDegree = (turret.getCPR() * gearRatio) / 360.0;
-
-        int turretTargetPos = (int) Math.round(PosDeg * countPerDegree);
+        //int turretTargetPos = (int) Math.round(PosDeg * countPerDegree);
+        int turretTargetPos = (int) Math.round((PosDeg / 360) * turret.getCPR() * gearRatio);
 
 
 //        if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
@@ -140,6 +139,46 @@ public class Turret extends SubsystemBase {
             turret.set(1);
         }
     }
+    //use command if overriding turret auto aim, pls use regular method for auto aim not command
+    public Command turretSetPosTicks(int ticks){
+        return Command.build()
+                .setStart(() -> {
+                    turret.setTargetPosition(ticks);
+                    turret.setPositionCoefficient(turretkP);
+                })
+                .setExecute(() -> {
+                    turret.set(1);
+                })
+                .setDone(() -> turret.atTargetPosition())
+                .setEnd(endCondition -> {
+                    turret.set(0);
+                })
+                .requiring(turret);
+    }
+    //use command if overriding turret auto aim, pls use regular method for auto aim not command
+    public Command turretSetPosDegrees(int PosDeg){
+        return Command.build()
+                .setStart(() -> {
+                    double countPerDegree = (turret.getCPR() * gearRatio) / 360.0;
+                    //int turretTargetPos = (int) Math.round(PosDeg * countPerDegree);
+                    int turretTargetPos = (int) Math.round(((double) PosDeg / 360) * turret.getCPR() * gearRatio);
+                    if (turretTargetPos > upperLimit) {
+                        turretTargetPos = upperLimit;
+                    } else if (turretTargetPos < lowerLimit) {
+                        turretTargetPos = lowerLimit;
+                    }
+                    turret.setTargetPosition(turretTargetPos);
+                    turret.setPositionCoefficient(turretkP);
+                })
+                .setExecute(() -> {
+                    turret.set(1);
+                })
+                .setDone(() -> turret.atTargetPosition())
+                .setEnd(endCondition -> {
+                    turret.set(0);
+                })
+                .requiring(turret);
+    }
 
     public double getTurretToGoalAngle() {
         return turretToGoalAngle;
@@ -153,6 +192,9 @@ public class Turret extends SubsystemBase {
     }
     public void stopTracking(){
         isTracking = false;
+    }
+    public boolean isTracking(){
+        return isTracking;
     }
     public int getPos() {
         return turret.getCurrentPosition();
