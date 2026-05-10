@@ -7,6 +7,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
@@ -56,10 +57,9 @@ public class Turret{
         goalX = x;
         goalY = y;
     }
-    Follower follower;
     Pose robotPos;
 
-    public Turret(HardwareMap hardwareMap, Follower follower, Alliance alliance) {
+    public Turret(HardwareMap hardwareMap, Alliance alliance) {
         turret = new MotorEx(hardwareMap, "turret", Motor.GoBILDA.RPM_223);
         turret.setRunMode(Motor.RunMode.PositionControl);
         turret.setInverted(true);
@@ -69,7 +69,6 @@ public class Turret{
         turret.set(1);
 
 
-        this.follower = follower;
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
             setGoalPos(130, 130);
@@ -80,13 +79,10 @@ public class Turret{
         }
 
     }
-    public void updateTurretFollower(Follower follower) {
-        this.follower = follower;
-    }
 
 
-    public void run() {
-        robotPos = follower.getPose();
+    public void run(Pose pose) {
+        robotPos = pose;
 
 
         heading = robotPos.getHeading();
@@ -108,8 +104,8 @@ public class Turret{
 
     public void TurretSetPos(double PosDeg) {
         double countPerDegree = (turret.getCPR() * gearRatio) / 360.0;
-        //int turretTargetPos = (int) Math.round(PosDeg * countPerDegree);
-        int turretTargetPos = (int) Math.round((PosDeg / 360) * turret.getCPR() * gearRatio);
+        int turretTargetPos = (int) Math.round(PosDeg * countPerDegree);
+        //int turretTargetPos = (int) Math.round((PosDeg / 360) * turret.getCPR() * gearRatio);
 
 
 //        if (turretTargetPos > (int) (185 * (countPerDegree * gearRatio))){
@@ -163,6 +159,7 @@ public class Turret{
                     //int turretTargetPos = (int) Math.round(PosDeg * countPerDegree);
                     int turretTargetPos = (int) Math.round(((double) PosDeg / 360) * turret.getCPR() * gearRatio);
                     if (turretTargetPos > upperLimit) {
+
                         turretTargetPos = upperLimit;
                     } else if (turretTargetPos < lowerLimit) {
                         turretTargetPos = lowerLimit;

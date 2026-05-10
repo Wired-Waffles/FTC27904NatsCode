@@ -4,7 +4,6 @@ import static com.pedropathing.ivy.commands.Commands.*;
 
 import com.pedropathing.ivy.Command;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
@@ -80,8 +79,7 @@ public class Intake {
     public Command toggle() {
         return conditional(() -> mode == Mode.OFF, on(), off());
     }
-    public Command periodic() {
-        return infinite(() -> {
+    public void periodic() {
             switch (mode) {
                 case ON:
                     intake.set(slowMode ? slowPower : fastPower);
@@ -96,7 +94,7 @@ public class Intake {
 
             telemetry.addData("Intake Current", intake.getCurrent(CurrentUnit.MILLIAMPS));
             telemetry.addData("Intake Velocity", intake.getVelocity());
-        });
+        };
     }
 
     enum Mode {
@@ -105,4 +103,3 @@ public class Intake {
         REVERSE
     }
 
-}

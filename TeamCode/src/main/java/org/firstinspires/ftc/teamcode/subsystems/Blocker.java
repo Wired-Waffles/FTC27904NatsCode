@@ -16,7 +16,7 @@ public class Blocker {
     private final Servo blockerServo;
 
     public Blocker(HardwareMap hardwareMap) {
-        blockerServo = hardwareMap.get(Servo.class, "blocker");
+        blockerServo = hardwareMap.get(Servo.class, "stopper");
     }
 
     public void blockPos() {

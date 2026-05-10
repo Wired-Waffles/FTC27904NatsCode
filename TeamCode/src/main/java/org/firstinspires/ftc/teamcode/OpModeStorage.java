@@ -10,7 +10,7 @@ public class OpModeStorage {
     public static double ks = 0.09;
     public static double kv = 0.0004325;
     Alliance alliance = Alliance.BLUE;
-    Pose pose = new Pose(72,72, 0);
+    Pose pose = new Pose(54,9, 0);
 
 
     public boolean isAutoDrive() {

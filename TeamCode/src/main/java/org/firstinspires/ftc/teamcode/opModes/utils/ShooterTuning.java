@@ -49,7 +49,7 @@ public class ShooterTuning extends CommandOpMode {
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
         limelight = new LimeLight(hardwareMap, Alliance.RED);
-        turret = new Turret(hardwareMap, follower, Alliance.RED);
+        turret = new Turret(hardwareMap, Alliance.RED);
 
         coreDriver = new GamepadEx(gamepad1);
         controlPanel = new GamepadEx(gamepad2);

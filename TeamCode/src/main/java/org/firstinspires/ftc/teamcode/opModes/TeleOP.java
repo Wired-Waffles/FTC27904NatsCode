@@ -2,13 +2,17 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.configurables.annotations.IgnoreConfigurable;
+import com.bylazar.utils.LoopTimer;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.paths.PathChain;
+import com.pedropathing.util.PoseHistory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
@@ -16,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.OpModeStorage;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
 import org.firstinspires.ftc.teamcode.subsystems.Blocker;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.LimeLight;
@@ -28,8 +33,10 @@ import static com.pedropathing.ivy.pedro.PedroCommands.*;
 
 import java.util.function.Supplier;
 @Configurable
-@TeleOp (name = "BLUE TEAM")
+@TeleOp (name = "TeleOP")
 public class TeleOP extends LinearOpMode {
+    @IgnoreConfigurable
+    static PoseHistory poseHistory;
 
     Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
@@ -53,11 +60,13 @@ public class TeleOP extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        ElapsedTime loopTimer = new ElapsedTime();
+        variables = new OpModeStorage();
         follower = Constants.createFollower(hardwareMap);
         limelight = new LimeLight(hardwareMap, variables.getAlliance());
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
-        turret = new Turret(hardwareMap, follower, variables.getAlliance());
+        turret = new Turret(hardwareMap, variables.getAlliance());
         blocker = new Blocker(hardwareMap);
         variables = new OpModeStorage();
         follower.setStartingPose(variables.getPose());
@@ -82,13 +91,15 @@ public class TeleOP extends LinearOpMode {
         while (opModeIsActive()) {
             Scheduler.execute();
             limelight.run();
-            turret.run();
+            turret.run(follower.getPose());
             shooter.run();
+            intake.periodic();
 
 //        if (shooter.getError() > - 50 && shooter.getError() < 50 && shooter.getTargetVelo() > 0){
 //            if (!gamepad1.isRumbling()){gamepad1.rumble(100);}
 //            if (!gamepad2.isRumbling()){gamepad2.rumble(100);}
 //        }
+
             shooter.setPIDFCoeffs(kp, 0, 0, 0);
             shooter.setFeedforward(ks, kv, 0);
             limelight.setPose(follower.getPose());
@@ -108,22 +119,22 @@ public class TeleOP extends LinearOpMode {
             if (gamepad1.squareWasPressed()) {turret.startTracking();}
             if (gamepad1.squareWasReleased()) {turret.stopTracking();}
 
+
             follower.update();
-            turret.updateTurretFollower(follower);
             if (!turret.isTracking()) {
                 turret.TurretSetPos(0);
             }
-//          turret.startTracking();
+            Tuning.drawCurrent();
+            //turret.startTracking();
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("OPMODE TELEMETRY", "");
             telemetryData.addData("Alliance", (variables.getAlliance() == Alliance.RED) ? "RED" : "BLUE");
-            telemetryData.addData("", follower.getPose().getY());
-            telemetryData.addData("Heading", follower.getPose().getHeading());
+            telemetryData.addData("Loop Time", loopTimer.milliseconds());
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("DRIVETRAIN TELEMETRY", "");
             telemetryData.addData("X", follower.getPose().getX());
             telemetryData.addData("Y", follower.getPose().getY());
-            telemetryData.addData("Heading", follower.getPose().getHeading());
+            telemetryData.addData("Heading", Math.toDegrees(follower.getPose().getHeading()));
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("SHOOTER TELEMETRY", "");
             telemetryData.addData("Shooter CURRENT speed", shooter.getCurrentVelo());
@@ -139,13 +150,16 @@ public class TeleOP extends LinearOpMode {
             telemetryData.addData("LIMELIGHT TELEMETRY", "");
             telemetryData.addData("canRelocalise", limelight.canRelocalize());
             if (limelight.canRelocalize()) {
-                telemetryData.addData("limelight x", (limelight.getPoseFromLimelight().getX()));
+                telemetryData.addData("limelight x", limelight.getPoseFromLimelight().getX());
                 telemetryData.addData("limelight y", limelight.getPoseFromLimelight().getY());
-                telemetryData.addData("limelight heading", limelight.getPoseFromLimelight().getHeading());
+                telemetryData.addData("limelight heading", Math.toDegrees(limelight.getPoseFromLimelight().getHeading()));
             }
             telemetryData.addData("--------------------------", "");
 
             telemetryData.update();
+            loopTimer.reset();
         }
     }
+
+
 }

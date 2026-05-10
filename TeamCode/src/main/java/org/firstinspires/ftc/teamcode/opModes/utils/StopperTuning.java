@@ -14,8 +14,6 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.commands.IntakeKill;
-import org.firstinspires.ftc.teamcode.commands.IntakeRun;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
@@ -37,12 +35,12 @@ public class StopperTuning extends CommandOpMode {
         super.reset();
         follower = Constants.createFollower(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
-        turret = new Turret(hardwareMap, follower, Alliance.RED);
+        turret = new Turret(hardwareMap, Alliance.RED);
         coreDriver = new GamepadEx(gamepad1);
         controlPanel = new GamepadEx(gamepad2);
         Button intakeButton = new GamepadButton(
                 coreDriver, GamepadKeys.Button.LEFT_BUMPER
-        ).whenPressed(new IntakeRun(intake)).whenReleased(new IntakeKill(intake));
+        ).whenPressed(new InstantCommand(() -> intake.closeStopper())).whenReleased(new InstantCommand(() -> intake.closeStopper()));
         Button openStopper = new GamepadButton(
                 coreDriver, GamepadKeys.Button.DPAD_UP
         ).whenPressed(new InstantCommand(() -> intake.setStopperPos(openPos)));
