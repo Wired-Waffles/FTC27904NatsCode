@@ -108,6 +108,10 @@ public class Tuning extends SelectableOpMode {
     @Override
     public void onLog(List<String> lines) {}
 
+    public static void drawRobot(Pose pose) {
+        Drawing.drawRobot(pose);
+    }
+
     public static void drawCurrent() {
         try {
             Drawing.drawRobot(follower.getPose());

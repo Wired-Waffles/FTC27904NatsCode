@@ -62,7 +62,7 @@ public class Turret{
     public Turret(HardwareMap hardwareMap, Alliance alliance) {
         turret = new MotorEx(hardwareMap, "turret", Motor.GoBILDA.RPM_223);
         turret.setRunMode(Motor.RunMode.PositionControl);
-        turret.setInverted(true);
+        turret.setInverted(false);
         turret.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         turret.resetEncoder();
         turret.setTargetPosition(0);

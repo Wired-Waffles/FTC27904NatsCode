@@ -22,7 +22,7 @@ public class LimeLight {
     boolean canRelocalize = false;
     public LimeLight(HardwareMap hardwareMap, Alliance alliance){
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(2);
+        limelight.setPollRateHz(5);
         limelight.start();
         this.alliance = alliance;
 
@@ -44,7 +44,8 @@ public class LimeLight {
         }*/
         if (result != null && result.isValid()) {
             Pose3D botpose_mt1 = result.getBotpose();
-            if (botpose_mt1 != null) {
+            long staleness = result.getStaleness();
+            if (botpose_mt1 != null && staleness > 200) {
                 double x = botpose_mt1.getPosition().x;
                 double y = botpose_mt1.getPosition().y;
                 FtcDashboard.getInstance().getTelemetry().addData("MT1 Location", "(" + x + ", " + y + ")");

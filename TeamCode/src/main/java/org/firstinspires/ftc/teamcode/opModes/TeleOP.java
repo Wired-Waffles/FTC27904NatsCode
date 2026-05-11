@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
+import com.bylazar.field.FieldManager;
+import com.bylazar.field.PanelsField;
 import com.bylazar.utils.LoopTimer;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
@@ -43,6 +45,7 @@ public class TeleOP extends LinearOpMode {
     LimeLight limelight;
     Shooter shooter;
     Intake intake;
+    FieldManager fieldView = PanelsField.INSTANCE.getField();
     Turret turret;
     Blocker blocker;
     OpModeStorage variables;
@@ -73,6 +76,7 @@ public class TeleOP extends LinearOpMode {
         follower.startTeleopDrive();
         limelight.setPose(follower.getPose());
         variables.setIfAutoDrive(false);
+        fieldView.setOffsets(PanelsField.INSTANCE.getPresets().getPEDRO_PATHING());
         kp = OpModeStorage.kp;
         kv = OpModeStorage.kv;
         ks = OpModeStorage.ks;
@@ -124,7 +128,6 @@ public class TeleOP extends LinearOpMode {
             if (!turret.isTracking()) {
                 turret.TurretSetPos(0);
             }
-            Tuning.drawCurrent();
             //turret.startTracking();
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("OPMODE TELEMETRY", "");
@@ -155,6 +158,10 @@ public class TeleOP extends LinearOpMode {
                 telemetryData.addData("limelight heading", Math.toDegrees(limelight.getPoseFromLimelight().getHeading()));
             }
             telemetryData.addData("--------------------------", "");
+            Tuning.drawRobot(follower.getPose());
+            if (limelight.canRelocalize()) {Tuning.drawRobot(limelight.getPoseFromLimelight());}
+            fieldView.update();
+
 
             telemetryData.update();
             loopTimer.reset();
