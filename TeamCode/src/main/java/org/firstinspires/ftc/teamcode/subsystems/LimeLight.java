@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -60,8 +61,13 @@ public class LimeLight {
     public void setPose(Pose pose){
         this.pose = pose;
     }
+
+    public Pose3D getLimelightPoseRAW() {
+        return limelightPose;
+    }
+
     public Pose getPoseFromLimelight(){
-        return new Pose(limelightPose.getPosition().x, limelightPose.getPosition().y, limelightPose.getOrientation().getYaw(), FTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+        return new Pose(limelightPose.getPosition().x / 0.0254, limelightPose.getPosition().y / 0.0254, Math.toRadians(limelightPose.getOrientation().getYaw()), FTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
     }
     public void killLimelight(){
         limelight.stop();
@@ -70,6 +76,8 @@ public class LimeLight {
         limelight.start();
     }
     public boolean canRelocalize(){
+
+
         return canRelocalize;
     }
 }

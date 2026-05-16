@@ -71,11 +71,11 @@ public class Turret{
 
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
-            setGoalPos(130, 130);
+            setGoalPos(130, 138);
         } else if (alliance == Alliance.BLUE) {
-            setGoalPos(13, 130);
+            setGoalPos(13, 138);
         } else {
-            setGoalPos(130, 130);
+            setGoalPos(130, 138);
         }
 
     }
@@ -90,6 +90,7 @@ public class Turret{
         double dy = goalY-robotPos.getY();
 
         robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));
+        distanceToGoal = Math.hypot(dy, dx);
 
 
         turretToGoalAngle = robotToGoalAngle - Math.toDegrees(robotPos.getHeading());
@@ -156,7 +157,6 @@ public class Turret{
         return Command.build()
                 .setStart(() -> {
                     double countPerDegree = (turret.getCPR() * gearRatio) / 360.0;
-                    //int turretTargetPos = (int) Math.round(PosDeg * countPerDegree);
                     int turretTargetPos = (int) Math.round(((double) PosDeg / 360) * turret.getCPR() * gearRatio);
                     if (turretTargetPos > upperLimit) {
 

@@ -19,6 +19,8 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.OpModeStorage;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -57,6 +59,7 @@ public class TeleOP extends LinearOpMode {
     public static double ks;
     public static double kv;
     int turretPos = 0;
+    Pose3D limelightPose;
 
 
 
@@ -122,6 +125,7 @@ public class TeleOP extends LinearOpMode {
             if (gamepad1.dpadDownWasPressed()) {schedule(shooter.off());}
             if (gamepad1.squareWasPressed()) {turret.startTracking();}
             if (gamepad1.squareWasReleased()) {turret.stopTracking();}
+            if (gamepad1.psWasPressed()) {schedule(hold(follower));}
 
 
             follower.update();
