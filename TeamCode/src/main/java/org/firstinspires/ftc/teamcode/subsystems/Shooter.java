@@ -50,14 +50,14 @@ public class Shooter {
         //so liek distance then tps ok
         //distace in inches btw
         //speed interplut
-        speedInterpLUT.add(10, 850); //untested
-        speedInterpLUT.add(20, 900); //untested
-        speedInterpLUT.add(30, 970);
-        speedInterpLUT.add(40, 1050);
-        speedInterpLUT.add(50, 1050);
-        speedInterpLUT.add(60, 1150);
-        speedInterpLUT.add(70, 1200);
-        speedInterpLUT.add(80, 1250);
+        speedInterpLUT.add(10, 825); //untested
+        speedInterpLUT.add(20, 875); //untested
+        speedInterpLUT.add(30, 940);
+        speedInterpLUT.add(40, 1010);
+        speedInterpLUT.add(50, 1010);
+        speedInterpLUT.add(60, 1110);
+        speedInterpLUT.add(70, 1160);
+        speedInterpLUT.add(80, 1210);
 
         speedInterpLUT.add(125, 1500);
         speedInterpLUT.add(136, 1550);
@@ -74,6 +74,9 @@ public class Shooter {
 
         servoPosInterpLUT.add(125, 0.3);
         servoPosInterpLUT.add(136, 0.3);
+
+        speedInterpLUT.createLUT();
+        servoPosInterpLUT.createLUT();
     }
 
     public void velocity(double targetVelocity){

@@ -75,7 +75,7 @@ public class TeleOP extends LinearOpMode {
         turret = new Turret(hardwareMap, variables.getAlliance());
         blocker = new Blocker(hardwareMap);
         variables = new OpModeStorage();
-        follower.setStartingPose(variables.getPose());
+        follower.setStartingPose(OpModeStorage.pose);
         follower.startTeleopDrive();
         limelight.setPose(follower.getPose());
         variables.setIfAutoDrive(false);

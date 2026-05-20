@@ -22,6 +22,7 @@ public class Intake {
     public static double offPower = 0;
     public static double reversePower = 1;
     public static double shortReverseTimeMs = 400;
+    public boolean stopperOpen = false;
 
 
     public Intake(HardwareMap hardwareMap, Telemetry telemetry){
@@ -49,9 +50,11 @@ public class Intake {
     }
     public void openStopper(){
         stopper.set(0.5);
+        stopperOpen = true;
     }
     public void closeStopper(){
         stopper.set(0.7);
+        stopperOpen = false;
     }
     public void setStopperPos(double pos){
         stopper.set(pos);
@@ -74,6 +77,14 @@ public class Intake {
 
     public Command shortReverse() {
         return reverse().then(waitMs(shortReverseTimeMs)).then(on());
+    }
+
+    public Command stopperOpen() {
+        return instant(this::openStopper);
+    }
+
+    public Command stopperClose() {
+        return instant(this::closeStopper);
     }
 
     public Command toggle() {

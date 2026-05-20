@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.configurables.annotations.IgnoreConfigurable;
 import com.pedropathing.geometry.Pose;
 
 @Configurable
@@ -9,8 +10,10 @@ public class OpModeStorage {
     public static double kp = 0.007;
     public static double ks = 0.09;
     public static double kv = 0.0004325;
-    Alliance alliance = Alliance.BLUE;
-    Pose pose = new Pose(56,8, Math.toRadians(90));
+    @IgnoreConfigurable
+    public static Alliance alliance = Alliance.BLUE;
+    @IgnoreConfigurable
+    public static Pose pose = new Pose(56,8, Math.toRadians(90));
 
 
     public boolean isAutoDrive() {

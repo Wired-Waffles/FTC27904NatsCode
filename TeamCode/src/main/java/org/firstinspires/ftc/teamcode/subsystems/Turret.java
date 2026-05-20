@@ -71,11 +71,11 @@ public class Turret{
 
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
-            setGoalPos(130, 138);
+            setGoalPos(130, 134);
         } else if (alliance == Alliance.BLUE) {
-            setGoalPos(13, 138);
+            setGoalPos(13, 134);
         } else {
-            setGoalPos(130, 138);
+            setGoalPos(130, 134);
         }
 
     }
@@ -100,6 +100,8 @@ public class Turret{
         FtcDashboard.getInstance().getTelemetry().addData("turret drive gear pos", turret.getCurrentPosition());
         if (isTracking) {
             TurretSetPos(turretToGoalAngle);
+        } else {
+            TurretSetPos(0);
         }
     }
 
