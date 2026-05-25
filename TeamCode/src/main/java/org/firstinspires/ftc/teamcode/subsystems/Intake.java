@@ -15,7 +15,6 @@ public class Intake {
     MotorEx intake;
     ServoEx stopper;
     Telemetry telemetry;
-    private boolean slowMode = false;
     private Mode mode = Mode.OFF;
     public static double fastPower = -1;
     public static double slowPower = -1;
@@ -53,7 +52,7 @@ public class Intake {
         stopperOpen = true;
     }
     public void closeStopper(){
-        stopper.set(0.7);
+        stopper.set(0.75);
         stopperOpen = false;
     }
     public void setStopperPos(double pos){
@@ -91,7 +90,8 @@ public class Intake {
         return conditional(() -> mode == Mode.OFF, on(), off());
     }
     public void periodic() {
-            switch (mode) {
+        boolean slowMode = false;
+        switch (mode) {
                 case ON:
                     intake.set(slowMode ? slowPower : fastPower);
                     break;
@@ -105,7 +105,7 @@ public class Intake {
 
             telemetry.addData("Intake Current", intake.getCurrent(CurrentUnit.MILLIAMPS));
             telemetry.addData("Intake Velocity", intake.getVelocity());
-        };
+        }
     }
 
     enum Mode {

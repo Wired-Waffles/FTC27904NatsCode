@@ -33,7 +33,7 @@ public class BlueFarZoneSolo extends LinearOpMode {
     Alliance alliance = Alliance.BLUE;
     PathChain pickup1, pickup1ToShoot, pickup2, pickup2ToShoot, pickup3, pickup3ToShoot, leave;
 
-    Pose startPose = new Pose(54, 9, Math.toRadians(90));
+    Pose startPose = new Pose(56, 8, Math.toRadians(90));
     Pose pickup1Pose = new Pose(10, 9);
     Pose shootPose = new Pose(56, 12, Math.toRadians(90));
     Pose pickup2Pose = new Pose(9, 36);
@@ -74,27 +74,27 @@ public class BlueFarZoneSolo extends LinearOpMode {
     public Command autoRoutine() {
         return sequential(
                 instant(() -> turret.startTracking()),
-                shooter.interpLUTVelo(turret.getDistanceToGoal()),
+                shooter.setVelo(1550),
                 intake.stopperOpen(),
                 waitMs(1500),
                 intake.on(),
                 waitMs(1000),
                 intake.stopperClose(),
-                follow(follower, pickup1),
-                follow(follower, pickup1ToShoot),
-                shooter.interpLUTVelo(turret.getDistanceToGoal()),
-                intake.stopperOpen(),
-                waitMs(1000),
-                intake.stopperClose(),
+//                follow(follower, pickup1),
+//                follow(follower, pickup1ToShoot),
+//                shooter.setVelo(1500),
+//                intake.stopperOpen(),
+//                waitMs(1000),
+//                intake.stopperClose(),
                 follow(follower, pickup2),
                 follow(follower, pickup2ToShoot),
-                shooter.interpLUTVelo(turret.getDistanceToGoal()),
+                shooter.setVelo(1500),
                 intake.stopperOpen(),
                 waitMs(1000),
                 intake.stopperClose(),
                 follow(follower, pickup3),
                 follow(follower, pickup3ToShoot),
-                shooter.interpLUTVelo(turret.getDistanceToGoal()),
+                shooter.setVelo(1500),
                 intake.stopperOpen(),
                 waitMs(1000),
                 intake.stopperClose(),
@@ -130,8 +130,8 @@ public class BlueFarZoneSolo extends LinearOpMode {
             telemetry.addData("x", follower.getPose().getX());
             telemetry.addData("y", follower.getPose().getY());
             telemetry.addData("heading", follower.getPose().getHeading());
-            telemetry.addData("Current path distance remaining", follower.getCurrentPath().getDistanceRemaining());
-            telemetry.addData("Path number", follower.getCurrentPathNumber());
+            //telemetry.addData("Current path distance remaining", follower.getCurrentPath().getDistanceRemaining());
+            //telemetry.addData("Path number", follower.getCurrentPathNumber());
             telemetry.update();
             pose = follower.getPose();
         }
