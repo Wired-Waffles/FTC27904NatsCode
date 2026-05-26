@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
+import com.pedropathing.control.PredictiveBrakingCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -28,12 +29,9 @@ public class Constants {
 
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(12.5)
-            .forwardZeroPowerAcceleration(-31.05)
-            .lateralZeroPowerAcceleration(-68.83)
-            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0, 0.01))
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0, 0))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.025, 0, 0.00001, 0.6, 0.01))
-            .centripetalScaling(0.0005);
+            .headingPIDFCoefficients(new PIDFCoefficients(0.825, 0, 0.02, 0.03))
+            .centripetalScaling(0)
+            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.175, 0.07296371171869691,0.0016913331528721365));
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -46,14 +44,12 @@ public class Constants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .useBrakeModeInTeleOp(true)
-            .xVelocity(62.26)
-            .yVelocity(49.18);
+            .xVelocity(55.42561304287648)
+            .yVelocity(38.5396601159);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            //.forwardPodY(-2.22473)
-            //.strafePodX(-7.1)
-            .forwardPodY(-2.2185)
-            .strafePodX(-7.52937)
+            .forwardPodY(-7.019712)
+            .strafePodX(-2.441183736)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
