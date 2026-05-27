@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import static com.pedropathing.ivy.commands.Commands.instant;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.seattlesolvers.solverslib.hardware.motors.Motor;
-import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
-import org.firstinspires.ftc.teamcode.Alliance;
 import com.pedropathing.ivy.Command;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.teamcode.Alliance;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 @Configurable
@@ -142,10 +142,17 @@ public class ServoTurret{
         isTracking = true;
     }
     public void stopTracking(){
+
         isTracking = false;
     }
     public boolean isTracking(){
         return isTracking;
+    }
+    public Command start(){
+        return instant(this::startTracking);
+    }
+    public Command stop(){
+        return instant(this::stopTracking);
     }
     public double getPos() { return turret1.get(); }
 
