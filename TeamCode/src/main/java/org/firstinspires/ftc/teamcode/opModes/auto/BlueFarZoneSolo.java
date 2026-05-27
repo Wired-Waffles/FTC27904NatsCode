@@ -31,40 +31,41 @@ public class BlueFarZoneSolo extends LinearOpMode {
 
     private Follower follower;
     Alliance alliance = Alliance.BLUE;
-    PathChain pickup1, pickup1ToShoot, pickup2, pickup2ToShoot, pickup3, pickup3ToShoot, leave;
+    PathChain pickup1, pickup2, pickup3, pickup3ToShoot, pickupReleased, leave;
 
-    Pose startPose = new Pose(56, 8, Math.toRadians(90));
-    Pose pickup1Pose = new Pose(10, 9);
-    Pose shootPose = new Pose(56, 12, Math.toRadians(90));
-    Pose pickup2Pose = new Pose(9, 36);
-    Pose pickup3Pose = new Pose(9, 60);
-    Pose endPose = new Pose(56, 36);
+    Pose startPose = new Pose(56, 8.5, Math.toRadians(180));
+    Pose pickup1Pose = new Pose(12, 8.5, Math.toRadians(180));
+    Pose shootPose = new Pose(56, 16);
+    Pose pickup2Pose = new Pose(17, 36);
+    Pose pickup3Pose = new Pose(20, 60);
+    Pose pickupReleasedPose = new Pose(12, 40);
+    Pose openGateNoIntakePose = new Pose(17, 67, 180);
+    Pose endPose = new Pose(56, 27);
     Intake intake;
     Shooter shooter;
     Turret turret;
 
     public void buildPaths(){
         pickup1 = follower.pathBuilder()
-                .addPath(new BezierCurve(startPose, new Pose(57, 17), pickup1Pose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), Math.toRadians(180))
-                .build();
-        pickup1ToShoot = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup1Pose, new Pose(31, 15), shootPose))
-                .setLinearHeadingInterpolation(Math.toRadians(180), shootPose.getHeading())
+                .addPath(new BezierLine(startPose, pickup1Pose))
+                .setTangentHeadingInterpolation()
+                .addPath(new BezierLine(pickup1Pose, shootPose))
+                .setConstantHeadingInterpolation(pickup1Pose.getHeading())
                 .build();
         pickup2 = follower.pathBuilder()
-                .addPath(new BezierCurve(shootPose, new Pose(60, 36), pickup2Pose))
-                .build();
-        pickup2ToShoot = follower.pathBuilder()
-                .addPath(new BezierLine(pickup2Pose, shootPose))
-                .setLinearHeadingInterpolation(Math.toRadians(180), shootPose.getHeading())
+                .addPath(new BezierCurve(shootPose, new Pose(54, 37), pickup2Pose))
+                .addPath(new BezierCurve(pickup2Pose, new Pose(54, 37), shootPose)).setReversed()
                 .build();
         pickup3 = follower.pathBuilder()
-                .addPath(new BezierCurve(shootPose, new Pose(64, 64), pickup3Pose))
+                .addPath(new BezierCurve(shootPose, new Pose(54, 60), pickup3Pose))
+                .addPath(new BezierCurve(pickup3Pose, new Pose(26, 66), openGateNoIntakePose))
                 .build();
         pickup3ToShoot = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3Pose, shootPose))
-                .setLinearHeadingInterpolation(Math.toRadians(180), shootPose.getHeading())
+                .addPath(new BezierLine(openGateNoIntakePose, shootPose)).setReversed()
+                .build();
+        pickupReleased = follower.pathBuilder()
+                .addPath(new BezierCurve(shootPose, new Pose(55, 41), pickupReleasedPose))
+                .addPath(new BezierCurve(pickupReleasedPose, new Pose(55, 41), shootPose)).setReversed()
                 .build();
         leave = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, endPose))
@@ -74,26 +75,35 @@ public class BlueFarZoneSolo extends LinearOpMode {
     public Command autoRoutine() {
         return sequential(
                 instant(() -> turret.startTracking()),
+                //preload
                 shooter.setVelo(1550),
                 intake.stopperOpen(),
                 waitMs(1500),
-                intake.on(),
+                intake.transfer(),
                 waitMs(1000),
                 intake.stopperClose(),
-//                follow(follower, pickup1),
-//                follow(follower, pickup1ToShoot),
-//                shooter.setVelo(1500),
-//                intake.stopperOpen(),
-//                waitMs(1000),
-//                intake.stopperClose(),
-                follow(follower, pickup2),
-                follow(follower, pickup2ToShoot),
+                intake.off(),
+                //one
+                follow(follower, pickup1),
                 shooter.setVelo(1500),
                 intake.stopperOpen(),
                 waitMs(1000),
                 intake.stopperClose(),
+                //two
+                follow(follower, pickup2),
+                shooter.setVelo(1500),
+                intake.stopperOpen(),
+                waitMs(1000),
+                intake.stopperClose(),
+                //three
                 follow(follower, pickup3),
                 follow(follower, pickup3ToShoot),
+                shooter.setVelo(1500),
+                intake.stopperOpen(),
+                waitMs(1000),
+                intake.stopperClose(),
+                //pickupLeftovers
+                follow(follower, pickupReleased),
                 shooter.setVelo(1500),
                 intake.stopperOpen(),
                 waitMs(1000),

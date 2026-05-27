@@ -13,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 public class Intake {
     MotorEx intake;
+    MotorEx transfer;
     ServoEx stopper;
     Telemetry telemetry;
     private Mode mode = Mode.OFF;
@@ -26,6 +27,8 @@ public class Intake {
 
     public Intake(HardwareMap hardwareMap, Telemetry telemetry){
         intake = new MotorEx(hardwareMap, "intake");
+        //transfer = new MotorEx(hardwareMap, "transfer");
+        //transfer.setInverted(true);
         intake.setRunMode(Motor.RunMode.RawPower);
         intake.setInverted(false);
         stopper = new ServoEx(hardwareMap, "stopper");
@@ -33,19 +36,23 @@ public class Intake {
     }
 
     public void run(){
-        intake.set(-1);
+        intake.set(1);
+        //transfer.set(1);
     }
 
     public void eject(){
-        intake.set(0.5);
+        intake.set(-0.5);
+        //transfer.set(-0.5)
     }
 
     public void kill(){
         intake.set(0);
+        //transfer.set(0)
     }
 
+
     public void Hold(){
-        intake.set(-0.3);
+        intake.set(0.3);
     }
     public void openStopper(){
         stopper.set(0.5);
@@ -69,6 +76,7 @@ public class Intake {
     public Command off() {
         return instant(() -> mode = Mode.OFF).requiring(intake);
     }
+    public Command transfer(){return instant(() -> mode = Mode.SHOOTING).requiring(intake);}
 
     public Command reverse() {
         return instant(() -> mode = Mode.REVERSE).requiring(intake);
@@ -91,15 +99,22 @@ public class Intake {
     }
     public void periodic() {
         boolean slowMode = false;
+
         switch (mode) {
                 case ON:
                     intake.set(slowMode ? slowPower : fastPower);
+                    //transfer.set(offPower);
                     break;
                 case OFF:
                     intake.set(offPower);
+                    //transfer.set(offPower);
                     break;
+                case SHOOTING:
+                    intake.set(slowMode ? slowPower : fastPower);
+                    //transfer.set(fastPower);
                 case REVERSE:
                     intake.set(reversePower);
+                    //transfer.set(reversePower);
                     break;
             }
 
@@ -111,6 +126,9 @@ public class Intake {
     enum Mode {
         ON,
         OFF,
+        SHOOTING,
+        SHOOTING_TO_ON,
+        ON_TO_SHOOTING,
         REVERSE
     }
 

@@ -115,9 +115,10 @@ public class TeleOP extends LinearOpMode {
             }
             follower.setTeleOpDrive(-gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
 
-            if (gamepad1.leftBumperWasPressed()) {schedule(intake.on());}
-
+            if (gamepad1.leftBumperWasPressed()){schedule(parallel(intake.stopperClose(), intake.on()));}
+            if (gamepad1.rightBumperWasPressed()){schedule(parallel(intake.stopperOpen(), intake.transfer()));}
             if (gamepad1.leftBumperWasReleased()) {schedule(intake.off());}
+            if (gamepad1.rightBumperWasPressed()){schedule(intake.off());}
             if (gamepad1.triangleWasPressed()) {schedule(blocker.block());}
             if (gamepad1.circleWasPressed()) {schedule(blocker.unblock());}
             if (gamepad1.dpadUpWasPressed()) {schedule(shooter.interpLUTVelo(turret.getDistanceToGoal()));}
