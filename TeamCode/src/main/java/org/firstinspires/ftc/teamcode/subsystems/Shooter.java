@@ -141,6 +141,7 @@ public class Shooter {
     // beware using this command will use lots of power to slow down the shooter w/ pidf,
     // so basically it'll run backwards until the flywheel is stopped
     // use if stopper is failing, or to stop shooting someone in the head
+    public Command setHoodPos(double hoodPos){return instant(() -> hoodPos(hoodPos)).requiring(hoodServo);}
     public Command hardStop() {
         return instant(() -> velocity(0)).requiring(shooter1, shooter2);
     }
