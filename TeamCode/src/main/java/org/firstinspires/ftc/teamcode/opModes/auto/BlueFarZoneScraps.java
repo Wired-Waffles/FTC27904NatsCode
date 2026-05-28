@@ -28,53 +28,78 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
-@Autonomous(name = "Blue far zone 15 solo", group = "Far zone")
-public class BlueFarZoneSolo15 extends LinearOpMode {
+@Autonomous(name = "Blue partner far zone", group = "Far zone")
+public class BlueFarZoneScraps extends LinearOpMode {
 
     private Follower follower;
     Alliance alliance = Alliance.BLUE;
-    Pose startPose = new Pose(56, 7, Math.toRadians(90));
-    Pose shootPose = new Pose(56, 16);
-    Pose pickUpMiddleSpikePose = new Pose(16, 60);
-    Pose openGatePose = new Pose(18, 70, Math.toRadians(180));
-    Pose pickUpHumanPlayerPose = new Pose(12, 9);
-    Pose pickUpCloseSpikePose = new Pose(12, 36);
-    Pose pickUpSpillagePose = new Pose(11, 21);
-    Pose endPose = new Pose(56, 24, Math.toRadians(90));
-    PathChain startToShoot, pickUpMiddleSpikeAndOpenGate, pickUpHumanPlayer, pickUpCloseSpike, pickUpSpillage, leave;
+    long shootWaitMs = 1000;
+    long intakeWaitMs = 1000; //only used at human player zone
 
-
+    Pose startPose = new Pose(56, 8.5, Math.toRadians(180));
+    Pose pickUpCloseSpikePose = new Pose(11, 36);
+    Pose shootPoseOne = new Pose(56, 16);
+    Pose shootPoseTwo = new Pose(46, 9, Math.toRadians(180));
+    Pose humanPlayerPickupPose = new Pose(12,9);
+    Pose humanPlayerPickupHigherPose = new Pose(12, 13);
+    Pose secretTunnelAlignPose = new Pose(8, 13, Math.toRadians(90));
+    Pose purgeTunnelArtifactsPose = new Pose (8,40);
+    Pose endPose = new Pose(36, 9);
 
     Intake intake;
     Shooter shooter;
     Turret turret;
+    PathChain pickUpCloseSpike,
+            changeShootPose,
+            goToHumanPlayer,
+            humanPlayerToShoot,
+            goToHumanPlayerHigher,
+            humanPlayerHigherToShoot,
+            purgeSecretTunnelFromHuman,
+            purgeToShoot,
+            leave;
+
 
     public void buildPaths(){
-        startToShoot = follower.pathBuilder()
-                .addPath(new BezierLine(startPose, shootPose))
-                .build();
-        pickUpMiddleSpikeAndOpenGate = follower.pathBuilder()
-                .addPath(new BezierCurve(shootPose, new Pose(56, 60), pickUpMiddleSpikePose))
-                .addPath(new BezierCurve(pickUpMiddleSpikePose, new Pose(31, 58), openGatePose)).setConstantHeadingInterpolation(openGatePose.getHeading())
-                .addPath(new BezierCurve(openGatePose, new Pose(56, 60), shootPose)).setReversed()
-                .build();
-        pickUpHumanPlayer = follower.pathBuilder()
-                .addPath(new BezierCurve(shootPose, new Pose(40, 8), pickUpHumanPlayerPose))
-                .addPath(new BezierCurve(pickUpHumanPlayerPose, new Pose(40, 8), shootPose)).setReversed()
-                .build();
         pickUpCloseSpike = follower.pathBuilder()
-                .addPath(new BezierCurve(shootPose, new Pose(55, 36), pickUpCloseSpikePose))
-                .addPath(new BezierCurve(pickUpCloseSpikePose, new Pose(55, 36), shootPose)).setReversed()
+                .addPath(new BezierCurve(startPose, new Pose(53, 40), pickUpCloseSpikePose))
+                .setConstantHeadingInterpolation(startPose.getHeading())
+                .addPath(new BezierCurve(pickUpCloseSpikePose, new Pose(51, 34), shootPoseOne))
+                .setConstantHeadingInterpolation(startPose.getHeading()).setReversed()
                 .build();
-        pickUpSpillage = follower.pathBuilder()
-                .addPath(new BezierCurve(shootPose, new Pose(44, 21), pickUpSpillagePose))
-                .addPath(new BezierCurve(pickUpSpillagePose, new Pose(44, 21), shootPose)).setReversed()
+        changeShootPose = follower.pathBuilder()
+                .addPath(new BezierLine(shootPoseOne, shootPoseTwo))
+                .setConstantHeadingInterpolation(shootPoseTwo.getHeading())
+                .build();
+        goToHumanPlayer = follower.pathBuilder()
+                .addPath(new BezierLine(shootPoseTwo, humanPlayerPickupPose))
+                .build();
+        humanPlayerToShoot = follower.pathBuilder()
+                .addPath(new BezierLine(humanPlayerPickupPose, shootPoseTwo))
+                .setReversed()
+                .build();
+        goToHumanPlayerHigher = follower.pathBuilder()
+                .addPath(new BezierLine(shootPoseTwo, humanPlayerPickupHigherPose))
+                .setConstantHeadingInterpolation(shootPoseTwo.getHeading())
+                .build();
+        humanPlayerHigherToShoot = follower.pathBuilder()
+                .addPath(new BezierLine(humanPlayerPickupHigherPose, shootPoseTwo))
+                .setConstantHeadingInterpolation(shootPoseTwo.getHeading())
+                .build();
+        purgeSecretTunnelFromHuman = follower.pathBuilder()
+                .addPath(new BezierCurve(humanPlayerPickupPose, new Pose(17, 11), secretTunnelAlignPose))
+                .setLinearHeadingInterpolation(shootPoseTwo.getHeading(), secretTunnelAlignPose.getHeading())
+                .addPath(new BezierLine(secretTunnelAlignPose, purgeTunnelArtifactsPose))
+                .addPath(new BezierCurve(purgeTunnelArtifactsPose, new Pose(38, 41), shootPoseTwo))
+                .setLinearHeadingInterpolation(secretTunnelAlignPose.getHeading(), shootPoseTwo.getHeading())
                 .build();
         leave = follower.pathBuilder()
-                .addPath(new BezierLine(shootPose, endPose))
-                .setConstantHeadingInterpolation(Math.toRadians(90))
+                .addPath(new BezierLine(shootPoseTwo, endPose))
+                .setConstantHeadingInterpolation(shootPoseTwo.getHeading())
                 .build();
+
     }
+
 
     public Command autoRoutine() {
         return sequential(
@@ -82,37 +107,13 @@ public class BlueFarZoneSolo15 extends LinearOpMode {
                 instant(turret::startTracking),
                 parallel(
                         intake.stopperOpen(),
-                        shooter.setVelo(1500),
-                        shooter.setHoodPos(0.3),
-                        follow(follower, startToShoot)
+                        shooter.setVelo(1550),
+                        shooter.setHoodPos(0.3)
                 ),
-                waitMs(1000),
+                waitMs(1000), //spinup
                 intake.transfer(),
-                //middle + open gate
-                waitMs(1500),
-                parallel(
-                        intake.on(),
-                        intake.stopperClose(),
-                        follow(follower, pickUpMiddleSpikeAndOpenGate)
-                ),
-                parallel(
-                        intake.stopperOpen(),
-                        intake.transfer()
-                ),
-                waitMs(1500),
-                //human player zone
-                parallel(
-                        intake.on(),
-                        intake.stopperClose(),
-                        follow(follower, pickUpHumanPlayer)
-                ),
-                parallel(
-                        intake.stopperOpen(),
-                        intake.transfer()
-                ),
-                waitMs(1500),
-
-                //close spike
+                waitMs(shootWaitMs),
+                //collect close spike
                 parallel(
                         intake.on(),
                         intake.stopperClose(),
@@ -122,35 +123,55 @@ public class BlueFarZoneSolo15 extends LinearOpMode {
                         intake.stopperOpen(),
                         intake.transfer()
                 ),
-                waitMs(1500),
-
-                //artifacts from the ramp we opened
+                waitMs(shootWaitMs),
+                //start scrap pickup
+                follow(follower, changeShootPose),
+                //pick up from human player
                 parallel(
                         intake.on(),
                         intake.stopperClose(),
-                        follow(follower, pickUpSpillage)
+                        follow(follower, goToHumanPlayer)
                 ),
-
+                waitMs(intakeWaitMs),
+                follow(follower, humanPlayerToShoot),
                 parallel(
                         intake.stopperOpen(),
                         intake.transfer()
                 ),
-                waitMs(1500),
-
-                //leave
+                waitMs(shootWaitMs),
+                //pick up above human player zone
                 parallel(
                         intake.on(),
                         intake.stopperClose(),
-                        follow(follower, leave)
-                )
-
+                        follow(follower, goToHumanPlayerHigher)
+                ),
+                waitMs(intakeWaitMs),
+                follow(follower, humanPlayerHigherToShoot),
+                parallel(
+                        intake.stopperOpen(),
+                        intake.transfer()
+                ),
+                waitMs(shootWaitMs),
+                // human player and purge tunnel
+                parallel(
+                        intake.on(),
+                        intake.stopperClose(),
+                        follow(follower, goToHumanPlayer)
+                ),
+                waitMs(intakeWaitMs),
+                follow(follower, purgeSecretTunnelFromHuman),
+                parallel(
+                        intake.stopperOpen(),
+                        intake.transfer()
+                ),
+                waitMs(shootWaitMs),
+                follow(follower, leave)
         );
     }
 
-
-
     @Override
     public void runOpMode() throws InterruptedException {
+        //DONT MESS WITH THIS YIBO OR ANYONE
         shooter = new Shooter(hardwareMap);
         turret = new Turret(hardwareMap, alliance);
         intake = new Intake(hardwareMap, telemetry);
@@ -161,14 +182,13 @@ public class BlueFarZoneSolo15 extends LinearOpMode {
         waitForStart();
         schedule(autoRoutine());
         OpModeStorage.alliance = this.alliance;
-        shooter.setPIDFCoeffs(kp, 0, 0, 0);
-        shooter.setFeedforward(ks, kv, 0);
         while (opModeIsActive()) {
             follower.update();
             turret.run(follower.getPose());
             shooter.run();
             intake.periodic();
-
+            shooter.setPIDFCoeffs(kp, 0, 0, 0);
+            shooter.setFeedforward(ks, kv, 0);
             Scheduler.execute();
             // Feedback to Driver Hub for debugging
             telemetry.addData("x", follower.getPose().getX());
