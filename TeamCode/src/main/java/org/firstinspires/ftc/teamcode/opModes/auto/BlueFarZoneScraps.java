@@ -176,7 +176,7 @@ public class BlueFarZoneScraps extends LinearOpMode {
         turret = new Turret(hardwareMap, alliance);
         intake = new Intake(hardwareMap, telemetry);
         Scheduler.reset();
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(hardwareMap); //god
         buildPaths();
         follower.setStartingPose(startPose);
         waitForStart();

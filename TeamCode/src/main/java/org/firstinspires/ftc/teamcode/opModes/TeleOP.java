@@ -28,6 +28,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
 import org.firstinspires.ftc.teamcode.subsystems.Blocker;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.LimeLight;
+import org.firstinspires.ftc.teamcode.subsystems.ServoTurret;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import static com.pedropathing.ivy.Scheduler.schedule;
@@ -48,7 +49,7 @@ public class TeleOP extends LinearOpMode {
     Shooter shooter;
     Intake intake;
     FieldManager fieldView = PanelsField.INSTANCE.getField();
-    Turret turret;
+    ServoTurret turret;
     Blocker blocker;
     OpModeStorage variables;
     public static boolean autoDrive;
@@ -58,7 +59,6 @@ public class TeleOP extends LinearOpMode {
     public static double kp;
     public static double ks;
     public static double kv;
-    int turretPos = 0;
     Pose3D limelightPose;
 
 
@@ -72,7 +72,7 @@ public class TeleOP extends LinearOpMode {
         limelight = new LimeLight(hardwareMap, variables.getAlliance());
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
-        turret = new Turret(hardwareMap, variables.getAlliance());
+        turret = new ServoTurret(hardwareMap, variables.getAlliance());
         blocker = new Blocker(hardwareMap);
         variables = new OpModeStorage();
         follower.setStartingPose(OpModeStorage.pose);
@@ -130,6 +130,7 @@ public class TeleOP extends LinearOpMode {
             if (gamepad1.psWasPressed()) {schedule(hold(follower));}
 
 
+
             follower.update();
             if (!turret.isTracking()) {
                 turret.TurretSetPos(0);
@@ -154,7 +155,6 @@ public class TeleOP extends LinearOpMode {
             telemetryData.addData("turret pos in ticks", turret.getPos());
             telemetryData.addData("turret angle", turret.getTurretToGoalAngle());
             telemetryData.addData("turret distance", turret.getDistanceToGoal());
-            telemetryData.addData("turret reached", turret.reachedTarget());
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("LIMELIGHT TELEMETRY", "");
             telemetryData.addData("canRelocalise", limelight.canRelocalize());
