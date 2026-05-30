@@ -48,7 +48,7 @@ public class TeleOP extends LinearOpMode {
     Shooter shooter;
     Intake intake;
     FieldManager fieldView = PanelsField.INSTANCE.getField();
-    Turret turret;
+    ServoTurret turret;
     Blocker blocker;
     OpModeStorage variables;
     public static boolean autoDrive;
@@ -72,7 +72,7 @@ public class TeleOP extends LinearOpMode {
         limelight = new LimeLight(hardwareMap, variables.getAlliance());
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
-        turret = new Turret(hardwareMap, variables.getAlliance());
+        turret = new ServoTurret(hardwareMap, variables.getAlliance());
         blocker = new Blocker(hardwareMap);
         variables = new OpModeStorage();
         follower.setStartingPose(OpModeStorage.pose);
