@@ -182,6 +182,8 @@ public class BlueFarZoneScraps extends LinearOpMode {
         waitForStart();
         schedule(autoRoutine());
         OpModeStorage.alliance = this.alliance;
+
+        //this runs a lot
         while (opModeIsActive()) {
             follower.update();
             turret.run(follower.getPose());
