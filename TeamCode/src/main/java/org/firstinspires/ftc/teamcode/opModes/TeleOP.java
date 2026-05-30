@@ -95,6 +95,11 @@ public class TeleOP extends LinearOpMode {
                 blocker.block()
         );
         waitForStart();
+
+        //##########################################################
+        //everything above runs when init
+        //#########################################################
+
         while (opModeIsActive()) {
             Scheduler.execute();
             limelight.run();
