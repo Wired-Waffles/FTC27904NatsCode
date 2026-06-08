@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -27,6 +28,7 @@ public class Turret{
     public static int lowerLimit = -625;
     public static int upperLimit = 870;
     public static double turretkP = 0.01;
+    boolean sotm = true;
 
 
 
@@ -98,6 +100,7 @@ public class Turret{
         FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
         FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal() );
         FtcDashboard.getInstance().getTelemetry().addData("turret drive gear pos", turret.getCurrentPosition());
+
         if (isTracking) {
             TurretSetPos(turretToGoalAngle);
         } else {
@@ -178,6 +181,7 @@ public class Turret{
                 })
                 .requiring(turret);
     }
+
 
     public double getTurretToGoalAngle() {
         return turretToGoalAngle;

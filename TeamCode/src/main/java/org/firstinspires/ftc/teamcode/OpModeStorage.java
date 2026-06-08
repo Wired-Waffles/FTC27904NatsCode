@@ -10,6 +10,8 @@ public class OpModeStorage {
     public static double kp = 0.007;
     public static double ks = 0.09;
     public static double kv = 0.0004325;
+    //sotm
+    public static double kt = 0.5;
     @IgnoreConfigurable
     public static Alliance alliance = Alliance.BLUE;
     @IgnoreConfigurable

@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
+import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Alliance;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
@@ -24,6 +25,8 @@ public class ServoTurret{
 
 
     double goalX, goalY;
+    Pose realGoalPose;
+
 
 
 
@@ -66,8 +69,10 @@ public class ServoTurret{
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
             setGoalPos(130, 134);
+            realGoalPose = new Pose(130, 134);
         } else if (alliance == Alliance.BLUE) {
             setGoalPos(13, 134);
+            realGoalPose = new Pose(13, 134);
         } else {
             setGoalPos(130, 134);
         }
@@ -129,6 +134,15 @@ public class ServoTurret{
     public void TurretRAWSetPos(double pos){
         turret1.set(pos);
         turret2.set(pos);
+    }
+    public Pose moveGoalSOTMThing(double t, Vector velo, Vector accel) {
+        //vt - 0.5at^2
+        Vector veloComp = velo.times(t); //vt
+        Vector accelComp = accel.times(t*t).times(0.5); //0.5at^2
+        return new Pose(
+                realGoalPose.getX()- (veloComp.getXComponent()-accelComp.getXComponent()),
+                realGoalPose.getY()- (veloComp.getYComponent()-accelComp.getYComponent())
+        );
     }
 
     public double getTurretToGoalAngle() {
