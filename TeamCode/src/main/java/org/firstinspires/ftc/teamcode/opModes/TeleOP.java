@@ -61,6 +61,8 @@ public class TeleOP extends LinearOpMode {
     public static boolean autoDrive;
     public static double closeZoneVelo = 1150;
     public static double farZoneVelo = 1500;
+    public static double TuningShooterVelocity = 1150;
+    public static double TuningShooterHoodPos = 0;
     double driveDivisor = 2;
     Pose3D limelightPose;
     boolean sotm = true;
@@ -113,7 +115,6 @@ public class TeleOP extends LinearOpMode {
                 Pose sotmGoalPose = turret.moveGoalSOTMThing(kt, follower.getVelocity(), follower.getAcceleration());
                 turret.setGoalPos(sotmGoalPose.getX(), sotmGoalPose.getY());
             }
-            //follower.getVelocity();
 
 //        if (shooter.getError() > - 50 && shooter.getError() < 50 && shooter.getTargetVelo() > 0){
 //            if (!gamepad1.isRumbling()){gamepad1.rumble(100);}
@@ -141,6 +142,10 @@ public class TeleOP extends LinearOpMode {
             if (gamepad1.dpadDownWasPressed()) {schedule(shooter.off());}
             if (gamepad1.squareWasPressed()) {turret.startTracking();}
             if (gamepad1.squareWasReleased()) {turret.stopTracking();}
+            if (gamepad1.optionsWasPressed()) {
+                schedule(shooter.setVelo(TuningShooterVelocity));
+                schedule(shooter.setHoodPos(TuningShooterHoodPos));
+            }
             if (gamepad1.psWasPressed()) {schedule(hold(follower));}
 
 

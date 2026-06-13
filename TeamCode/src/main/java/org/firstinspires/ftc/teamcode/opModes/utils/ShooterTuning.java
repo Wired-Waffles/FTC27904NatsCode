@@ -1,123 +1,191 @@
 package org.firstinspires.ftc.teamcode.opModes.utils;
 
+
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
+import com.bylazar.configurables.annotations.IgnoreConfigurable;
+import com.bylazar.field.FieldManager;
+import com.bylazar.field.PanelsField;
+import com.bylazar.utils.LoopTimer;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.Scheduler;
+import com.pedropathing.math.Vector;
+import com.pedropathing.paths.PathChain;
+import com.pedropathing.util.PoseHistory;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.command.button.Button;
-import com.seattlesolvers.solverslib.command.button.GamepadButton;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.OpModeStorage;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
+import org.firstinspires.ftc.teamcode.subsystems.Blocker;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.LimeLight;
+import org.firstinspires.ftc.teamcode.subsystems.ServoTurret;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
+import static com.pedropathing.ivy.Scheduler.schedule;
+import static com.pedropathing.ivy.commands.Commands.*;
+import static com.pedropathing.ivy.groups.Groups.*;
+import static com.pedropathing.ivy.pedro.PedroCommands.*;
 
-@TeleOp(name = "Shooter PIDF tuning")
+import static org.firstinspires.ftc.teamcode.OpModeStorage.kp;
+import static org.firstinspires.ftc.teamcode.OpModeStorage.ks;
+import static org.firstinspires.ftc.teamcode.OpModeStorage.kt;
+import static org.firstinspires.ftc.teamcode.OpModeStorage.kv;
+
+import java.util.function.Supplier;
 @Configurable
-public class ShooterTuning extends CommandOpMode {
-    GamepadEx coreDriver, controlPanel;
-    Shooter shooter;
-    Intake intake;
-    LimeLight limelight;
-    Turret turret;
+@TeleOp (name = "Shooter Tuning")
+public class ShooterTuning extends LinearOpMode {
+    @IgnoreConfigurable
+    static PoseHistory poseHistory;
+
     Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
-    TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-    public static double velocity = 1500;
-    public static double hoodPos = 0;
+    LimeLight limelight;
+    Shooter shooter;
+    Intake intake;
+    FieldManager fieldView = PanelsField.INSTANCE.getField();
+    ServoTurret turret;
+    Blocker blocker;
+    OpModeStorage variables;
+    public static boolean autoDrive;
+    public static double closeZoneVelo = 1150;
+    public static double farZoneVelo = 1500;
+    public static double TuningShooterVelocity = 1150;
+    public static double TuningShooterHoodPos = 0;
+    double driveDivisor = 2;
+    Pose3D limelightPose;
+    boolean sotm = true;
 
-    public static double kp = 0.007;
-    public static double ks = 0.09;
-    public static double kv = 0.0004325;
 
-    boolean startShooter = false;
+
 
     @Override
-    public void initialize() {
-        super.reset();
+    public void runOpMode() {
+        ElapsedTime loopTimer = new ElapsedTime();
+        ElapsedTime telemetryTimer = new ElapsedTime();
+        variables = new OpModeStorage();
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 72, 0));
+        limelight = new LimeLight(hardwareMap, variables.getAlliance());
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
-        limelight = new LimeLight(hardwareMap, Alliance.RED);
-        turret = new Turret(hardwareMap, Alliance.RED);
-
-        coreDriver = new GamepadEx(gamepad1);
-        controlPanel = new GamepadEx(gamepad2);
-
-        Button shootButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.RIGHT_BUMPER
-        ).whenPressed(
-                new InstantCommand(() -> shooter.velocity(velocity))
-        );
-        Button addMoreVelo = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_UP
-        ).whenPressed(new InstantCommand(()->velocity += 100));
-        Button addLessVelo = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_DOWN
-        ).whenPressed(new InstantCommand(()-> velocity -= 100));
-        Button addMoreHoodAngle = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_RIGHT
-        ).whenPressed(new InstantCommand(()-> hoodPos+=0.05));
-        Button addLessHoodAngle = new GamepadButton(
-                coreDriver, GamepadKeys.Button.DPAD_LEFT
-        ).whenPressed(new InstantCommand(()-> hoodPos-=0.05));
-        Button intakeButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.LEFT_BUMPER
-        ).whenPressed(new InstantCommand(() -> intake.run())).whenReleased(new InstantCommand(() -> intake.kill()));
-        Button setShooterPosButton = new GamepadButton(
-                coreDriver, GamepadKeys.Button.CIRCLE
-        ).whenPressed(new InstantCommand(() -> shooter.hoodPos(hoodPos)));
-        Button manualTurret = new GamepadButton(
-                coreDriver, GamepadKeys.Button.TRIANGLE
-        ).whenPressed(new InstantCommand(() -> turret.TurretSetPos(90)));
-    follower.startTeleopDrive();
-    turret.startTracking();
-
-    }
-
-    @Override
-    public void run() {
-        super.run();
-        shooter.setPIDFCoeffs(kp, 0, 0, 0);
-        shooter.setFeedforward(ks, kv, 0);
+        turret = new ServoTurret(hardwareMap, variables.getAlliance());
+        blocker = new Blocker(hardwareMap);
+        variables = new OpModeStorage();
+        follower.setStartingPose(new Pose(56, 8, Math.toRadians(90)));
+        follower.startTeleopDrive();
         limelight.setPose(follower.getPose());
-        telemetryData.addData( "shooter velo",shooter.getCurrentVelo());
-        telemetryData.addData("target velo", shooter.getTargetVelo());
-        telemetryData.addData("kp", kp);
-        telemetryData.addData("kv", kv);
-        telemetryData.addData("ks", ks);
-        telemetryData.addData("X", follower.getPose().getX());
-        telemetryData.addData("Y", follower.getPose().getY());
-        telemetryData.addData("Turret distance to goal", turret.getDistanceToGoal());
-        telemetryData.addData("Turret angle to goal", turret.getTurretToGoalAngle());
-        telemetryData.addData("Turret pos", turret.getPos());
-        telemetryData.addData("Robot pos", follower.getPose());
-        telemetryM.addData( "shooter velo",shooter.getCurrentVelo());
-        telemetryM.addData("target velo", shooter.getTargetVelo());
-        telemetryM.addData("kp", kp);
-        telemetryM.addData("kv", kv);
-        telemetryM.addData("ks", ks);
-        telemetryM.addData("power", shooter.getShooterPower());
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        variables.setIfAutoDrive(false);
+        fieldView.setOffsets(PanelsField.INSTANCE.getPresets().getPEDRO_PATHING());
+        waitForStart();
+        telemetryTimer.reset();
 
-        telemetryM.update();
-        telemetryData.update();
+        //##########################################################
+        //everything above runs when init
+        //#########################################################
 
-        if (limelight.canRelocalize()) {
-            //follower.setPose(limelight.getPoseFromLimelight());
-            follower.setPose(new Pose(limelight.getPoseFromLimelight().getX(), limelight.getPoseFromLimelight().getY(), follower.getHeading()));
+        while (opModeIsActive()) {
+            Scheduler.execute();
+            limelight.run();
+            turret.run(follower.getPose());
+            shooter.run();
+            intake.periodic();
+            if (sotm) {
+                Pose sotmGoalPose = turret.moveGoalSOTMThing(kt, follower.getVelocity(), follower.getAcceleration());
+                turret.setGoalPos(sotmGoalPose.getX(), sotmGoalPose.getY());
+            }
+            //follower.getVelocity();
+
+//        if (shooter.getError() > - 50 && shooter.getError() < 50 && shooter.getTargetVelo() > 0){
+//            if (!gamepad1.isRumbling()){gamepad1.rumble(100);}
+//            if (!gamepad2.isRumbling()){gamepad2.rumble(100);}
+//        }
+
+            shooter.setPIDFCoeffs(kp, 0, 0, 0);
+            shooter.setFeedforward(ks, kv, 0);
+            limelight.setPose(follower.getPose());
+            if (limelight.canRelocalize()) {
+                follower.setPose(new Pose(limelight.getPoseFromLimelight().getX(), limelight.getPoseFromLimelight().getY(), limelight.getPoseFromLimelight().getHeading()));
+            }
+            follower.setTeleOpDrive(-gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
+
+
+            if (gamepad1.leftBumperWasPressed()){schedule(parallel(intake.stopperClose(), intake.on()));}
+            if (gamepad1.rightBumperWasPressed()){schedule(parallel(intake.stopperOpen(), intake.transfer()));}
+            if (gamepad1.leftBumperWasReleased()) {schedule(intake.off());}
+            if (gamepad1.rightBumperWasPressed()){schedule(intake.off());}
+            if (gamepad1.triangleWasPressed()) {schedule(blocker.block());}
+            if (gamepad1.circleWasPressed()) {schedule(blocker.unblock());}
+            if (gamepad1.dpadUpWasPressed()) {schedule(shooter.interpLUTVelo(turret.getDistanceToGoal()));}
+            if (gamepad1.dpadLeftWasPressed()) {schedule(shooter.setVelo(closeZoneVelo));}
+            if (gamepad1.dpadRightWasPressed()) {schedule(shooter.setVelo(farZoneVelo));}
+            if (gamepad1.dpadDownWasPressed()) {schedule(shooter.off());}
+            if (gamepad1.squareWasPressed()) {turret.startTracking();}
+            if (gamepad1.squareWasReleased()) {turret.stopTracking();}
+            if (gamepad1.optionsWasPressed()) {
+                schedule(shooter.setVelo(TuningShooterVelocity));
+                schedule(shooter.setHoodPos(TuningShooterHoodPos));
+            }
+            if (gamepad1.psWasPressed()) {schedule(hold(follower));}
+            if (gamepad2.dpadDownWasPressed()) {turret.TurretSetPos(0);}
+            if (gamepad2.dpadLeftWasPressed()) {turret.TurretSetPos(90);}
+
+
+
+            follower.update();
+//            if (!turret.isTracking()) {
+//                turret.TurretSetPos(0);
+//            }
+            //turret.startTracking();
+            //this line will activate turret tracking permanently (ish)
+            telemetryData.addData("--------------------------", "");
+            telemetryData.addData("OPMODE TELEMETRY", "");
+            telemetryData.addData("Alliance", (variables.getAlliance() == Alliance.RED) ? "RED" : "BLUE");
+            telemetryData.addData("Loop Time", loopTimer.milliseconds());
+            telemetryData.addData("--------------------------", "");
+            telemetryData.addData("DRIVETRAIN TELEMETRY", "");
+            telemetryData.addData("X", follower.getPose().getX());
+            telemetryData.addData("Y", follower.getPose().getY());
+            telemetryData.addData("Heading", Math.toDegrees(follower.getPose().getHeading()));
+            telemetryData.addData("--------------------------", "");
+            telemetryData.addData("SHOOTER TELEMETRY", "");
+            telemetryData.addData("Shooter CURRENT speed", shooter.getCurrentVelo());
+            telemetryData.addData("Shooter TARGET speed", shooter.getTargetVelo());
+            telemetryData.addData("Shooter POWER", shooter.getShooterPower());
+            telemetryData.addData("--------------------------", "");
+            telemetryData.addData("TURRET TELEMETRY", "");
+            telemetryData.addData("turret pos in ticks", turret.getPos());
+            telemetryData.addData("turret angle", turret.getTurretToGoalAngle());
+            telemetryData.addData("turret distance", turret.getDistanceToGoal());
+            telemetryData.addData("--------------------------", "");
+            telemetryData.addData("LIMELIGHT TELEMETRY", "");
+            telemetryData.addData("canRelocalise", limelight.canRelocalize());
+            if (limelight.canRelocalize()) {
+                telemetryData.addData("limelight x", limelight.getPoseFromLimelight().getX());
+                telemetryData.addData("limelight y", limelight.getPoseFromLimelight().getY());
+                telemetryData.addData("limelight heading", Math.toDegrees(limelight.getPoseFromLimelight().getHeading()));
+            }
+            telemetryData.addData("--------------------------", "");
+            Tuning.drawRobot(follower.getPose());
+            if (limelight.canRelocalize()) {Tuning.drawRobot(limelight.getPoseFromLimelight());}
+            fieldView.update();
+            if (telemetryTimer.milliseconds() > 500) {
+                telemetryData.update();
+                telemetryTimer.reset();
+            }
+            loopTimer.reset();
         }
-        follower.update();
     }
+
 
 }

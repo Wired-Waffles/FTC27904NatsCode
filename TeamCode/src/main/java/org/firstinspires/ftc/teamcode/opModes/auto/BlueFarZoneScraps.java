@@ -25,6 +25,7 @@ import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.OpModeStorage;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.ServoTurret;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
@@ -48,7 +49,7 @@ public class BlueFarZoneScraps extends LinearOpMode {
 
     Intake intake;
     Shooter shooter;
-    Turret turret;
+    ServoTurret turret;
     PathChain pickUpCloseSpike,
             changeShootPose,
             goToHumanPlayer,
@@ -104,7 +105,7 @@ public class BlueFarZoneScraps extends LinearOpMode {
     public Command autoRoutine() {
         return sequential(
                 //preload
-                instant(turret::startTracking),
+                turret.start(),
                 parallel(
                         intake.stopperOpen(),
                         shooter.setVelo(1550),
@@ -173,7 +174,7 @@ public class BlueFarZoneScraps extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         //DONT MESS WITH THIS YIBO OR ANYONE
         shooter = new Shooter(hardwareMap);
-        turret = new Turret(hardwareMap, alliance);
+        turret = new ServoTurret(hardwareMap, alliance);
         intake = new Intake(hardwareMap, telemetry);
         Scheduler.reset();
         follower = Constants.createFollower(hardwareMap); //god

@@ -25,6 +25,7 @@ import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.OpModeStorage;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.ServoTurret;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
@@ -47,7 +48,7 @@ public class RedFarZoneSolo15 extends LinearOpMode {
 
     Intake intake;
     Shooter shooter;
-    Turret turret;
+    ServoTurret turret;
 
     public void buildPaths(){
         startToShoot = follower.pathBuilder()
@@ -152,7 +153,7 @@ public class RedFarZoneSolo15 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         shooter = new Shooter(hardwareMap);
-        turret = new Turret(hardwareMap, alliance);
+        turret = new ServoTurret(hardwareMap, alliance);
         intake = new Intake(hardwareMap, telemetry);
         Scheduler.reset();
         follower = Constants.createFollower(hardwareMap);

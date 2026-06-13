@@ -19,8 +19,11 @@ public class ServoTurret{
 
 
 
+
     public static int lowerLimit = 0;
     public static int upperLimit = 1;
+    public static double ServoOffset1 = 0;
+    public static double ServoOffset2 = 0;
 
 
 
@@ -63,7 +66,7 @@ public class ServoTurret{
 //        turret.set(1);
         turret1 = new ServoEx(hardwareMap, "turret1");
         turret2 = new ServoEx(hardwareMap, "turret2");
-        turret1.setInverted(true);
+        turret1.setInverted(false);
 
 
         this.alliance = alliance;
@@ -85,8 +88,8 @@ public class ServoTurret{
 
 
         heading = robotPos.getHeading();
-        double dx = goalX-robotPos.getX();
-        double dy = goalY-robotPos.getY();
+        double dx = goalX - robotPos.getX();
+        double dy = goalY - robotPos.getY();
 
         robotToGoalAngle = Math.toDegrees(Math.atan2(dy, dx));
         distanceToGoal = Math.hypot(dy, dx);
@@ -95,13 +98,14 @@ public class ServoTurret{
         turretToGoalAngle = robotToGoalAngle - Math.toDegrees(robotPos.getHeading());
 
         FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
-        FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal() );
+        FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal());
         FtcDashboard.getInstance().getTelemetry().addData("turret drive gear pos", turret1.get());
         if (isTracking) {
             TurretSetPos(turretToGoalAngle);
-        } else {
-            TurretSetPos(0);
         }
+//        } else {
+//            TurretSetPos(0);
+//        }
     }
 
     public void TurretSetPos(double PosDeg) {
@@ -127,8 +131,8 @@ public class ServoTurret{
         } else if (turretTargetPos < lowerLimit) {
             turretTargetPos = lowerLimit;
         }
-        turret1.set(turretTargetPos);
-        turret2.set(turretTargetPos);
+        turret1.set(turretTargetPos + ServoOffset1);
+        turret2.set(turretTargetPos + ServoOffset2);
     }
 
     public void TurretRAWSetPos(double pos){
@@ -159,6 +163,7 @@ public class ServoTurret{
 
         isTracking = false;
     }
+
     public boolean isTracking(){
         return isTracking;
     }
@@ -167,6 +172,9 @@ public class ServoTurret{
     }
     public Command stop(){
         return instant(this::stopTracking);
+    }
+    public Command pos(double pos){
+        return instant(() -> TurretSetPos(pos));
     }
     public double getPos() { return turret1.get(); }
 
