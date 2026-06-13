@@ -63,7 +63,7 @@ public class ShooterTuning extends LinearOpMode {
     public static double farZoneVelo = 1500;
     public static double TuningShooterVelocity = 1150;
     public static double TuningShooterHoodPos = 0;
-    double driveDivisor = 2;
+    double driveDivisor = 1;
     Pose3D limelightPose;
     boolean sotm = true;
 
@@ -117,7 +117,7 @@ public class ShooterTuning extends LinearOpMode {
             if (limelight.canRelocalize()) {
                 follower.setPose(new Pose(limelight.getPoseFromLimelight().getX(), limelight.getPoseFromLimelight().getY(), limelight.getPoseFromLimelight().getHeading()));
             }
-            follower.setTeleOpDrive(-gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
+            follower.setTeleOpDrive(gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
 
 
             if (gamepad1.leftBumperWasPressed()){schedule(parallel(intake.stopperClose(), intake.on()));}
