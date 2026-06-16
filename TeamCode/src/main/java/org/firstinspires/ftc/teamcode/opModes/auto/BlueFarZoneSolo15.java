@@ -50,6 +50,7 @@ public class BlueFarZoneSolo15 extends LinearOpMode {
     Shooter shooter;
     ServoTurret turret;
 
+
     public void buildPaths(){
         startToShoot = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, shootPose))

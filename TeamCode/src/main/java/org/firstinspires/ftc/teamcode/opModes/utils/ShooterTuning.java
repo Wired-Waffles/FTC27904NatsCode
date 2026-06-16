@@ -5,6 +5,8 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
 import com.bylazar.field.FieldManager;
 import com.bylazar.field.PanelsField;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.bylazar.utils.LoopTimer;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
@@ -66,6 +68,8 @@ public class ShooterTuning extends LinearOpMode {
     double driveDivisor = 1;
     Pose3D limelightPose;
     boolean sotm = true;
+    TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+    Command transferStop;
 
 
 
@@ -89,6 +93,11 @@ public class ShooterTuning extends LinearOpMode {
         fieldView.setOffsets(PanelsField.INSTANCE.getPresets().getPEDRO_PATHING());
         waitForStart();
         telemetryTimer.reset();
+        transferStop = sequential(
+                intake.off(),
+                waitMs(1500),
+                intake.stopperClose()
+        );
 
         //##########################################################
         //everything above runs when init
@@ -117,13 +126,13 @@ public class ShooterTuning extends LinearOpMode {
             if (limelight.canRelocalize()) {
                 follower.setPose(new Pose(limelight.getPoseFromLimelight().getX(), limelight.getPoseFromLimelight().getY(), limelight.getPoseFromLimelight().getHeading()));
             }
-            follower.setTeleOpDrive(gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
+            follower.setTeleOpDrive(-gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
 
 
             if (gamepad1.leftBumperWasPressed()){schedule(parallel(intake.stopperClose(), intake.on()));}
             if (gamepad1.rightBumperWasPressed()){schedule(parallel(intake.stopperOpen(), intake.transfer()));}
             if (gamepad1.leftBumperWasReleased()) {schedule(intake.off());}
-            if (gamepad1.rightBumperWasPressed()){schedule(intake.off());}
+            if (gamepad1.rightBumperWasReleased()) {schedule(parallel(intake.stopperClose(), intake.off()));}
             if (gamepad1.triangleWasPressed()) {schedule(blocker.block());}
             if (gamepad1.circleWasPressed()) {schedule(blocker.unblock());}
             if (gamepad1.dpadUpWasPressed()) {schedule(shooter.interpLUTVelo(turret.getDistanceToGoal()));}
@@ -132,9 +141,12 @@ public class ShooterTuning extends LinearOpMode {
             if (gamepad1.dpadDownWasPressed()) {schedule(shooter.off());}
             if (gamepad1.squareWasPressed()) {turret.startTracking();}
             if (gamepad1.squareWasReleased()) {turret.stopTracking();}
-            if (gamepad1.optionsWasPressed()) {
+            if (gamepad2.optionsWasPressed()) {
                 schedule(shooter.setVelo(TuningShooterVelocity));
                 schedule(shooter.setHoodPos(TuningShooterHoodPos));
+            }
+            if (gamepad2.shareWasPressed()) {
+                schedule(instant(() -> shooter.kill()));
             }
             if (gamepad1.psWasPressed()) {schedule(hold(follower));}
             if (gamepad2.dpadDownWasPressed()) {turret.TurretSetPos(0);}
@@ -162,6 +174,9 @@ public class ShooterTuning extends LinearOpMode {
             telemetryData.addData("Shooter CURRENT speed", shooter.getCurrentVelo());
             telemetryData.addData("Shooter TARGET speed", shooter.getTargetVelo());
             telemetryData.addData("Shooter POWER", shooter.getShooterPower());
+            telemetryData.addData("kP", kp);
+            telemetryData.addData("kV", kv);
+            telemetryData.addData("kS", ks);
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("TURRET TELEMETRY", "");
             telemetryData.addData("turret pos in ticks", turret.getPos());
@@ -175,7 +190,14 @@ public class ShooterTuning extends LinearOpMode {
                 telemetryData.addData("limelight y", limelight.getPoseFromLimelight().getY());
                 telemetryData.addData("limelight heading", Math.toDegrees(limelight.getPoseFromLimelight().getHeading()));
             }
-            telemetryData.addData("--------------------------", "");
+            telemetryM.addData("--------------------------", "");
+            telemetryM.addData("Shooter CURRENT speed", shooter.getCurrentVelo());
+            telemetryM.addData("Shooter TARGET speed", shooter.getTargetVelo());
+            telemetryM.addData("Shooter POWER", shooter.getShooterPower());
+            telemetryM.addData("kP", kp);
+            telemetryM.addData("kV", kv);
+            telemetryM.addData("kS", ks);
+            telemetryM.update();
             Tuning.drawRobot(follower.getPose());
             if (limelight.canRelocalize()) {Tuning.drawRobot(limelight.getPoseFromLimelight());}
             fieldView.update();

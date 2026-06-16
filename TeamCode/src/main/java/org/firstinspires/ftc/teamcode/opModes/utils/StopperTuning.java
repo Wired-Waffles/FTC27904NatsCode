@@ -16,6 +16,7 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.ServoTurret;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 @TeleOp(name = "Stopper tuning")
@@ -23,7 +24,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Turret;
 public class StopperTuning extends CommandOpMode {
     GamepadEx coreDriver, controlPanel;
     Intake intake;
-    Turret turret;
+    ServoTurret turret;
     TelemetryData telemetryData = new TelemetryData(telemetry);
     TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
     public static double velocity = 1800;
@@ -35,7 +36,7 @@ public class StopperTuning extends CommandOpMode {
         super.reset();
         follower = Constants.createFollower(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
-        turret = new Turret(hardwareMap, Alliance.RED);
+        turret = new ServoTurret(hardwareMap, Alliance.RED);
         coreDriver = new GamepadEx(gamepad1);
         controlPanel = new GamepadEx(gamepad2);
         Button intakeButton = new GamepadButton(
@@ -54,7 +55,6 @@ public class StopperTuning extends CommandOpMode {
     public void run() {
         super.run();
         telemetryM.addData("Stopper pos", intake.getStopperPos());
-        telemetryM.addData("Turret Pos", turret.getPos());
         telemetryM.update();
     }
 

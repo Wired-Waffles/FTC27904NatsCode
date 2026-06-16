@@ -18,7 +18,7 @@ public class Intake {
     Telemetry telemetry;
     private Mode mode = Mode.OFF;
     public static double fastPower = -1;
-    public static double slowPower = -1;
+    public static double slowPower = -0.3;
     public static double offPower = 0;
     public static double reversePower = 1;
     public static double shortReverseTimeMs = 400;
@@ -27,8 +27,8 @@ public class Intake {
 
     public Intake(HardwareMap hardwareMap, Telemetry telemetry){
         intake = new MotorEx(hardwareMap, "intake");
-        //transfer = new MotorEx(hardwareMap, "transfer");
-        //transfer.setInverted(true);
+        transfer = new MotorEx(hardwareMap, "transfer");
+        transfer.setInverted(true);
         intake.setRunMode(Motor.RunMode.RawPower);
         intake.setInverted(false);
         stopper = new ServoEx(hardwareMap, "stopper");
@@ -37,17 +37,17 @@ public class Intake {
 
     public void run(){
         intake.set(1);
-        //transfer.set(1);
+        transfer.set(1);
     }
 
     public void eject(){
         intake.set(-0.5);
-        //transfer.set(-0.5)
+        transfer.set(-0.5);
     }
 
     public void kill(){
         intake.set(0);
-        //transfer.set(0)
+        transfer.set(0);
     }
 
 
@@ -55,11 +55,11 @@ public class Intake {
         intake.set(0.3);
     }
     public void openStopper(){
-        stopper.set(0.5);
+        stopper.set(0);
         stopperOpen = true;
     }
     public void closeStopper(){
-        stopper.set(0.75);
+        stopper.set(0.3);
         stopperOpen = false;
     }
     public void setStopperPos(double pos){
@@ -102,20 +102,22 @@ public class Intake {
 
         switch (mode) {
                 case ON:
-                    intake.set(slowMode ? slowPower : fastPower);
-                    //transfer.set(offPower);
+                    intake.set(fastPower);
+                    transfer.set(slowPower);
                     break;
                 case OFF:
                     intake.set(offPower);
-                    //transfer.set(offPower);
+                    transfer.set(offPower);
                     break;
                 case SHOOTING:
-                    intake.set(slowMode ? slowPower : fastPower);
-                    //transfer.set(fastPower);
+                    intake.set(fastPower);
+                    transfer.set(fastPower);
+                    break;
                 case REVERSE:
                     intake.set(reversePower);
-                    //transfer.set(reversePower);
+                    transfer.set(reversePower);
                     break;
+
             }
 
             telemetry.addData("Intake Current", intake.getCurrent(CurrentUnit.MILLIAMPS));
