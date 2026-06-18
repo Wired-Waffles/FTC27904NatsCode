@@ -87,7 +87,8 @@ public class ServoTurret{
         distanceToGoal = Math.hypot(dy, dx);
 
 
-        turretToGoalAngle = robotToGoalAngle - Math.toDegrees(robotPos.getHeading());
+        // Normalize angle to prevent wrap-around issues when heading crosses 180/-180
+        turretToGoalAngle = org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeDegrees(robotToGoalAngle - Math.toDegrees(robotPos.getHeading()));
 
         FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
         FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal() );
@@ -100,13 +101,12 @@ public class ServoTurret{
     }
 
     public void TurretSetPos(double PosDeg) {
-        if (PosDeg > 135) {
-            PosDeg = 135;
-        } else if (PosDeg < -135) {
-            PosDeg = -135;
-        }
-        double countPerDegree = (double) 1/270;
-        double turretTargetPos = (countPerDegree * PosDeg) + 0.5;
+        // Calculate the required servo rotation based on gear ratio
+        double servoDeg = PosDeg * gearRatio;
+
+        // Convert degrees to [0, 1] servo range assuming a 270-degree servo
+        double countPerDegree = 1.0 / 270.0;
+        double turretTargetPos = (servoDeg * countPerDegree) + 0.5;
         //int turretTargetPos = (int) Math.round((PosDeg / 360) * turret.getCPR() * gearRatio);
 
 
