@@ -5,6 +5,8 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
 import com.bylazar.field.FieldManager;
 import com.bylazar.field.PanelsField;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.bylazar.utils.LoopTimer;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
@@ -41,6 +43,7 @@ import static org.firstinspires.ftc.teamcode.OpModeStorage.kp;
 import static org.firstinspires.ftc.teamcode.OpModeStorage.ks;
 import static org.firstinspires.ftc.teamcode.OpModeStorage.kt;
 import static org.firstinspires.ftc.teamcode.OpModeStorage.kv;
+import static org.firstinspires.ftc.teamcode.OpModeStorage.pose;
 
 import java.util.function.Supplier;
 @Configurable
@@ -56,16 +59,15 @@ public class TeleOP extends LinearOpMode {
     Intake intake;
     FieldManager fieldView = PanelsField.INSTANCE.getField();
     ServoTurret turret;
-    Blocker blocker;
-    OpModeStorage variables;
     public static boolean autoDrive;
     public static double closeZoneVelo = 1150;
     public static double farZoneVelo = 1500;
-    public static double TuningShooterVelocity = 1150;
-    public static double TuningShooterHoodPos = 0;
-    double driveDivisor = 2;
+    public static double TuningShooterVelocity = 1740;
+    public static double TuningShooterHoodPos = 0.85;
+    double driveDivisor = 1;
     Pose3D limelightPose;
     boolean sotm = true;
+    TelemetryManager telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
 
 
@@ -74,37 +76,23 @@ public class TeleOP extends LinearOpMode {
     public void runOpMode() {
         ElapsedTime loopTimer = new ElapsedTime();
         ElapsedTime telemetryTimer = new ElapsedTime();
-        variables = new OpModeStorage();
         follower = Constants.createFollower(hardwareMap);
-        limelight = new LimeLight(hardwareMap, variables.getAlliance());
+        limelight = new LimeLight(hardwareMap, OpModeStorage.alliance);
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
-        turret = new ServoTurret(hardwareMap, variables.getAlliance());
-        blocker = new Blocker(hardwareMap);
-        variables = new OpModeStorage();
-        follower.setStartingPose(OpModeStorage.pose);
+        turret = new ServoTurret(hardwareMap, OpModeStorage.alliance);
+        follower.setStartingPose(pose);
         follower.startTeleopDrive();
-        limelight.setPose(follower.getPose());
-        variables.setIfAutoDrive(false);
-        fieldView.setOffsets(PanelsField.INSTANCE.getPresets().getPEDRO_PATHING());
 
-        Command stayHere = hold(follower);
-        Command automaticShootAndHold = sequential(
-                shooter.interpLUTVelo(turret.getDistanceToGoal()),
-                hold(follower),
-                blocker.unblock(),
-                intake.on(),
-                waitMs(2000),
-                intake.off(),
-                blocker.block()
-        );
+        limelight.setPose(follower.getPose());
+        fieldView.setOffsets(PanelsField.INSTANCE.getPresets().getPEDRO_PATHING());
         waitForStart();
         telemetryTimer.reset();
 
         //##########################################################
         //everything above runs when init
         //#########################################################
-
+        turret.startTracking();
         while (opModeIsActive()) {
             Scheduler.execute();
             limelight.run();
@@ -116,50 +104,64 @@ public class TeleOP extends LinearOpMode {
                 turret.setGoalPos(sotmGoalPose.getX(), sotmGoalPose.getY());
             }
 
-//        if (shooter.getError() > - 50 && shooter.getError() < 50 && shooter.getTargetVelo() > 0){
-//            if (!gamepad1.isRumbling()){gamepad1.rumble(100);}
-//            if (!gamepad2.isRumbling()){gamepad2.rumble(100);}
-//        }
-
             shooter.setPIDFCoeffs(kp, 0, 0, 0);
             shooter.setFeedforward(ks, kv, 0);
             limelight.setPose(follower.getPose());
             if (limelight.canRelocalize()) {
                 follower.setPose(new Pose(limelight.getPoseFromLimelight().getX(), limelight.getPoseFromLimelight().getY(), limelight.getPoseFromLimelight().getHeading()));
             }
-            follower.setTeleOpDrive(gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
+            follower.setTeleOpDrive(-gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
 
 
-            if (gamepad1.leftBumperWasPressed()){schedule(parallel(intake.stopperClose(), intake.on()));}
-            if (gamepad1.rightBumperWasPressed()){schedule(parallel(intake.stopperOpen(), intake.transfer()));}
+            if (gamepad1.leftBumperWasPressed()){schedule(intake.transfer());}
+            if (gamepad1.rightBumperWasPressed()){schedule(intake.transfer());}
             if (gamepad1.leftBumperWasReleased()) {schedule(intake.off());}
-            if (gamepad1.rightBumperWasPressed()){schedule(intake.off());}
-            if (gamepad1.triangleWasPressed()) {schedule(blocker.block());}
-            if (gamepad1.circleWasPressed()) {schedule(blocker.unblock());}
+            if (gamepad1.rightBumperWasReleased()) {schedule(intake.off());}
+
+            if (gamepad2.leftBumperWasPressed()){schedule(intake.on());}
+            if (gamepad2.rightBumperWasPressed()){schedule(intake.transfer());}
+
+            if (gamepad2.leftBumperWasReleased()) {schedule(intake.off());}
+            if (gamepad2.rightBumperWasReleased()) {schedule(intake.off());}
+
+            if (gamepad1.dpadRightWasPressed()) {schedule(intake.stopperOpen());}
+            if (gamepad1.dpadLeftWasPressed()) {schedule(intake.stopperClose());}
+
+            if (gamepad2.dpadLeftWasPressed()) {schedule(intake.stopperOpen());}
+            if (gamepad2.dpadRightWasPressed()) {schedule(intake.stopperClose());}
+
             if (gamepad1.dpadUpWasPressed()) {schedule(shooter.interpLUTVelo(turret.getDistanceToGoal()));}
-            if (gamepad1.dpadLeftWasPressed()) {schedule(shooter.setVelo(closeZoneVelo));}
-            if (gamepad1.dpadRightWasPressed()) {schedule(shooter.setVelo(farZoneVelo));}
             if (gamepad1.dpadDownWasPressed()) {schedule(shooter.off());}
-            if (gamepad1.squareWasPressed()) {turret.startTracking();}
-            if (gamepad1.squareWasReleased()) {turret.stopTracking();}
+
+            if (gamepad2.dpadDownWasPressed()) {schedule(shooter.off());}
+            if (gamepad2.dpadUpWasPressed()) {schedule(shooter.interpLUTVelo(turret.getDistanceToGoal()));}
+            if (gamepad2.squareWasPressed()) {turret.startTracking();}
             if (gamepad1.optionsWasPressed()) {
                 schedule(shooter.setVelo(TuningShooterVelocity));
                 schedule(shooter.setHoodPos(TuningShooterHoodPos));
             }
-            if (gamepad1.psWasPressed()) {schedule(hold(follower));}
+            if (gamepad1.shareWasPressed()) {
+                schedule(instant(() -> shooter.kill()));
+            }
+            if (gamepad2.crossWasPressed()) {schedule(sequential(shooter.setHoodPos(1), waitMs(3000), shooter.setHoodPos(0)));}
+            if (gamepad2.triangleWasPressed()) {schedule(intake.reverse());}
+            if (gamepad2.triangleWasReleased()) {schedule(intake.off());}
 
+            if (intake.stopperOpen){
+                gamepad2.setLedColor(255, 0, 255, 200);
+            }
 
 
             follower.update();
-            if (!turret.isTracking()) {
-                turret.TurretSetPos(0);
-            }
             //turret.startTracking();
+
             //this line will activate turret tracking permanently (ish)
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("OPMODE TELEMETRY", "");
-            telemetryData.addData("Alliance", (variables.getAlliance() == Alliance.RED) ? "RED" : "BLUE");
+            telemetryData.addData("Alliance", (OpModeStorage.alliance == Alliance.RED) ? "RED" : "BLUE");
             telemetryData.addData("Loop Time", loopTimer.milliseconds());
+            telemetryData.addData("--------------------------", "");
+            telemetryData.addData("STOPPER OPEN??????????", intake.stopperOpen);
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("DRIVETRAIN TELEMETRY", "");
             telemetryData.addData("X", follower.getPose().getX());
@@ -170,6 +172,9 @@ public class TeleOP extends LinearOpMode {
             telemetryData.addData("Shooter CURRENT speed", shooter.getCurrentVelo());
             telemetryData.addData("Shooter TARGET speed", shooter.getTargetVelo());
             telemetryData.addData("Shooter POWER", shooter.getShooterPower());
+            telemetryData.addData("kP", kp);
+            telemetryData.addData("kV", kv);
+            telemetryData.addData("kS", ks);
             telemetryData.addData("--------------------------", "");
             telemetryData.addData("TURRET TELEMETRY", "");
             telemetryData.addData("turret pos in ticks", turret.getPos());
@@ -183,14 +188,19 @@ public class TeleOP extends LinearOpMode {
                 telemetryData.addData("limelight y", limelight.getPoseFromLimelight().getY());
                 telemetryData.addData("limelight heading", Math.toDegrees(limelight.getPoseFromLimelight().getHeading()));
             }
-            telemetryData.addData("--------------------------", "");
+            telemetryM.addData("--------------------------", "");
+            telemetryM.addData("Shooter CURRENT speed", shooter.getCurrentVelo());
+            telemetryM.addData("Shooter TARGET speed", shooter.getTargetVelo());
+            telemetryM.addData("Shooter POWER", shooter.getShooterPower());
+            telemetryM.addData("kP", kp);
+            telemetryM.addData("kV", kv);
+            telemetryM.addData("kS", ks);
+            telemetryM.update();
             Tuning.drawRobot(follower.getPose());
             if (limelight.canRelocalize()) {Tuning.drawRobot(limelight.getPoseFromLimelight());}
             fieldView.update();
-            if (telemetryTimer.milliseconds() > 500) {
-                telemetryData.update();
-                telemetryTimer.reset();
-            }
+            telemetryData.update();
+            telemetryTimer.reset();
             loopTimer.reset();
         }
     }

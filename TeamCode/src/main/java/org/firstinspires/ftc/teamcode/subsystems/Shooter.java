@@ -50,30 +50,27 @@ public class Shooter {
         //so liek distance then tps ok
         //distace in inches btw
         //speed interplut
-        speedInterpLUT.add(10, 825); //untested
-        speedInterpLUT.add(20, 875); //untested
-        speedInterpLUT.add(30, 940);
-        speedInterpLUT.add(40, 1010);
-        speedInterpLUT.add(50, 1010);
-        speedInterpLUT.add(60, 1110);
-        speedInterpLUT.add(70, 1160);
-        speedInterpLUT.add(80, 1210);
+        speedInterpLUT.add(40, 1080);
+        speedInterpLUT.add(50, 1160);
+        speedInterpLUT.add(60, 1200);
+        speedInterpLUT.add(70, 1260);
+        speedInterpLUT.add(80, 1320);
+        speedInterpLUT.add(102, 1400);
 
-        speedInterpLUT.add(125, 1500);
-        speedInterpLUT.add(136, 1550);
+        speedInterpLUT.add(121, 1620);
+
+        speedInterpLUT.add(148, 1680);
 
         //hood interplut
-        servoPosInterpLUT.add(10, 0);
-        servoPosInterpLUT.add(20, 0);
-        servoPosInterpLUT.add(30, 0);
-        servoPosInterpLUT.add(40, 0);
-        servoPosInterpLUT.add(50, 0);
-        servoPosInterpLUT.add(60, 0);
-        servoPosInterpLUT.add(70, 0);
-        servoPosInterpLUT.add(80, 0);
+        servoPosInterpLUT.add(40, 0.3 );
+        servoPosInterpLUT.add(50, 0.4);
+        servoPosInterpLUT.add(60, 0.4);
+        servoPosInterpLUT.add(70, 0.4);
+        servoPosInterpLUT.add(80, 0.4);
+        servoPosInterpLUT.add(102, 0.5);
 
-        servoPosInterpLUT.add(125, 0.3);
-        servoPosInterpLUT.add(136, 0.3);
+        servoPosInterpLUT.add(121, 0.75);
+        servoPosInterpLUT.add(148, 0.75);
 
         speedInterpLUT.createLUT();
         servoPosInterpLUT.createLUT();

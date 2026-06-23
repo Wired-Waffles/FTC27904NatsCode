@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Autonomous(name = "Reset Pose Red Far Zone")
 public class skipAutoRedFar extends LinearOpMode {
     private Follower follower;
-    Alliance alliance = Alliance.BLUE;
+    Alliance alliance = Alliance.RED;
 
     Pose startPose = new Pose(88, 8, Math.toRadians(90));
 
@@ -32,7 +32,7 @@ public class skipAutoRedFar extends LinearOpMode {
             follower.update();
             Scheduler.execute();
             // Feedback to Driver Hub for debugging
-            telemetry.addData("Pose Reset Complete", "Please now go to TeleOP");
+            telemetry.addData("Pose Reset Complete", "Please now go to TeleOP >:D");
         }
 
     }

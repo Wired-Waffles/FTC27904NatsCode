@@ -63,8 +63,8 @@ public class ShooterTuning extends LinearOpMode {
     public static boolean autoDrive;
     public static double closeZoneVelo = 1150;
     public static double farZoneVelo = 1500;
-    public static double TuningShooterVelocity = 1150;
-    public static double TuningShooterHoodPos = 0;
+    public static double TuningShooterVelocity = 1740;
+    public static double TuningShooterHoodPos = 0.85;
     double driveDivisor = 1;
     Pose3D limelightPose;
     boolean sotm = true;
@@ -129,28 +129,37 @@ public class ShooterTuning extends LinearOpMode {
             follower.setTeleOpDrive(-gamepad1.left_stick_y / driveDivisor, -gamepad1.left_stick_x / driveDivisor, -gamepad1.right_stick_x / driveDivisor, true);
 
 
-            if (gamepad1.leftBumperWasPressed()){schedule(parallel(intake.stopperClose(), intake.on()));}
-            if (gamepad1.rightBumperWasPressed()){schedule(parallel(intake.stopperOpen(), intake.transfer()));}
+            if (gamepad1.leftBumperWasPressed()){schedule(intake.on());}
+            if (gamepad1.rightBumperWasPressed()){schedule(intake.transfer());}
             if (gamepad1.leftBumperWasReleased()) {schedule(intake.off());}
-            if (gamepad1.rightBumperWasReleased()) {schedule(parallel(intake.stopperClose(), intake.off()));}
-            if (gamepad1.triangleWasPressed()) {schedule(blocker.block());}
-            if (gamepad1.circleWasPressed()) {schedule(blocker.unblock());}
+            if (gamepad1.rightBumperWasReleased()) {schedule(transferStop);}
+
+            if (gamepad2.leftBumperWasPressed()){schedule(intake.on());}
+            if (gamepad2.rightBumperWasPressed()){schedule(intake.transfer());}
+            if (gamepad2.leftBumperWasReleased()) {schedule(intake.off());}
+            if (gamepad2.rightBumperWasReleased()) {schedule(transferStop);}
+
+            if (gamepad1.triangleWasPressed()) {schedule(intake.stopperOpen());}
+            if (gamepad1.circleWasPressed()) {schedule(intake.stopperClose());}
+            if (gamepad2.dpadLeftWasPressed()) {schedule(intake.stopperOpen());}
+            if (gamepad2.dpadRightWasPressed()) {schedule(intake.stopperClose());}
             if (gamepad1.dpadUpWasPressed()) {schedule(shooter.interpLUTVelo(turret.getDistanceToGoal()));}
             if (gamepad1.dpadLeftWasPressed()) {schedule(shooter.setVelo(closeZoneVelo));}
             if (gamepad1.dpadRightWasPressed()) {schedule(shooter.setVelo(farZoneVelo));}
             if (gamepad1.dpadDownWasPressed()) {schedule(shooter.off());}
             if (gamepad1.squareWasPressed()) {turret.startTracking();}
             if (gamepad1.squareWasReleased()) {turret.stopTracking();}
-            if (gamepad2.optionsWasPressed()) {
+            if (gamepad1.optionsWasPressed()) {
                 schedule(shooter.setVelo(TuningShooterVelocity));
                 schedule(shooter.setHoodPos(TuningShooterHoodPos));
             }
-            if (gamepad2.shareWasPressed()) {
+            if (gamepad1.shareWasPressed()) {
                 schedule(instant(() -> shooter.kill()));
             }
             if (gamepad1.psWasPressed()) {schedule(hold(follower));}
             if (gamepad2.dpadDownWasPressed()) {turret.TurretSetPos(0);}
             if (gamepad2.dpadLeftWasPressed()) {turret.TurretSetPos(90);}
+            if (gamepad2.crossWasPressed()) {schedule(sequential(shooter.setHoodPos(1), waitMs(3000), shooter.setHoodPos(0)));}
 
 
 

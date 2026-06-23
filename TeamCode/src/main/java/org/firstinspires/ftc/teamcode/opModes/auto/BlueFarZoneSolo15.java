@@ -84,8 +84,8 @@ public class BlueFarZoneSolo15 extends LinearOpMode {
                 instant(turret::startTracking),
                 parallel(
                         intake.stopperOpen(),
-                        shooter.setVelo(1500),
-                        shooter.setHoodPos(0.3),
+                        shooter.setVelo(1680),
+                        shooter.setHoodPos(0.75),
                         follow(follower, startToShoot)
                 ),
                 waitMs(1000),

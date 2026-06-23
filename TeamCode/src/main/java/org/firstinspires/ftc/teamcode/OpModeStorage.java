@@ -7,9 +7,9 @@ import com.pedropathing.geometry.Pose;
 @Configurable
 public class OpModeStorage {
     boolean isAutoDrive = true;
-    public static double kp = 0.002;
+    public static double kp = 0.0042;
     public static double ks = 0.06;
-    public static double kv = 0.0004175;
+    public static double kv = 0.0003985;
     //sotm
     public static double kt = 0.5;
     @IgnoreConfigurable

@@ -8,6 +8,8 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Alliance;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
@@ -69,13 +71,14 @@ public class ServoTurret{
         turret1.setInverted(false);
 
 
+
         this.alliance = alliance;
         if (alliance == Alliance.RED) {
-            setGoalPos(130, 134);
-            realGoalPose = new Pose(130, 134);
+            setGoalPos(144, 144);
+            realGoalPose = new Pose(144, 139);
         } else if (alliance == Alliance.BLUE) {
-            setGoalPos(13, 134);
-            realGoalPose = new Pose(13, 134);
+            setGoalPos(0, 144);
+            realGoalPose = new Pose(0, 139);
         } else {
             setGoalPos(130, 134);
         }
@@ -96,6 +99,7 @@ public class ServoTurret{
 
 
         turretToGoalAngle = robotToGoalAngle - Math.toDegrees(robotPos.getHeading());
+        turretToGoalAngle = AngleUnit.normalizeDegrees(turretToGoalAngle);
 
         FtcDashboard.getInstance().getTelemetry().addData("turret to goal angle", getTurretToGoalAngle());
         FtcDashboard.getInstance().getTelemetry().addData("distance to goal", getDistanceToGoal());

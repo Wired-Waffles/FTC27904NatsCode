@@ -100,8 +100,8 @@ public class BlueFarZoneSolo21 extends LinearOpMode {
                 instant(turret::startTracking),
                 parallel(
                         intake.stopperOpen(),
-                        shooter.setVelo(1550),
-                        shooter.setHoodPos(0.3)
+                        shooter.setVelo(1680),
+                        shooter.setHoodPos(0.75)
                 ),
                 waitMs(1000), //spinup
                 intake.transfer(),
@@ -130,7 +130,6 @@ public class BlueFarZoneSolo21 extends LinearOpMode {
                         intake.transfer()
                 ),
                 waitMs(shootWaitMs),
-                //thats 9 balls alr
                 //gate intake timeeee
 
                 //cycle 1
